@@ -145,6 +145,28 @@ riscos por ambiente, revise os textos que dizem "5 perigos" e a intro.
 cena. Atenção: os textos de interface dizem "7 dias/7 ambientes" e `diaAtual()` clampa
 em 7 — busque por `7` no arquivo. Também atualize README e manual.
 
+**Cenas com FOTO realista (novo padrão — testadores rejeitaram os desenhos SVG):**
+A Sala já usa foto; os demais ambientes devem migrar pelo mesmo pipeline:
+1. O usuário gera a foto no Gemini com prompt em inglês: foto documental de casa
+   brasileira habitada, 16:9, luz natural, SEM pessoas, com inventário dos objetos
+   interativos em **traços, nunca lista numerada** (o Gemini desenha os números na
+   imagem!) e a instrução final "must NOT contain any numbers, letters, labels or
+   markers". Se vierem números, pedir em seguida: "Remove all the white numbers...
+   keep everything else exactly the same" — funciona.
+2. Converter PNG→JPG q85 via System.Drawing (PowerShell) para `img/<ambiente>.jpg`
+   (~200 KB). A foto de 1376×768 mapeia para o viewBox 800×450 com fator ~0,586
+   (`vb = px * 450/768`; slice corta ~3px nas laterais).
+3. Na cena: `<image href="img/x.jpg" x="0" y="0" width="800" height="450"
+   preserveAspectRatio="xMidYMid slice"/>` + grupos `.hz`/`.sf` só com o círculo de
+   toque transparente e a marca em grupo com halo branco (ver a Sala como modelo:
+   `<g class="marca" opacity="0" stroke="#2e7d32">` com círculo branco width 12 por
+   baixo do colorido width 6 — necessário para visibilidade sobre foto).
+4. Adaptar riscos/seguros ao que a foto realmente mostra (a lição importa mais que o
+   objeto exato) e rodar a checagem de geometria (§7.3) + E2E (§7.2).
+5. Elementos "extras" da foto (brinquedos, revistas no chão) hoje são fundo (toque
+   grátis, "nada de especial") — limitação conhecida; discutir com o usuário se
+   devem virar zonas próprias.
+
 **Nova pergunta de solução:** 3 opções plausíveis, a certa NÃO precisa ser sempre a
 primeira do array... mas hoje todas usam `certa:0`. Melhoria bem-vinda: variar o índice
 (a UI já suporta).
