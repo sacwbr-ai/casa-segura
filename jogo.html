@@ -73,8 +73,12 @@
   .card-comodo.completo{border-color:var(--verde);background:var(--verde-claro)}
   .card-comodo:not(.bloqueado):active{transform:scale(.99)}
 
-  .palco{width:100%;background:#fff;border:1px solid var(--borda);border-radius:14px;overflow:hidden;margin-bottom:12px}
+  .palco{width:100%;background:#e8e2d4;border:1px solid var(--borda);border-radius:14px;overflow:hidden;margin-bottom:12px;position:relative}
   .palco svg{display:block;width:100%;height:auto}
+  /* foto como <img> comum (compatível com qualquer navegador) + zonas SVG por cima */
+  .cena-foto{display:block;width:100%;height:auto}
+  .cena-zonas{position:absolute;inset:0;width:100%;height:100%}
+  .cena-erro{padding:40px 20px;text-align:center;color:var(--texto-suave);font-size:1.05rem}
   /* nada de cursor especial nos objetos: o mouse não pode entregar os alvos */
   .hz,.sf{cursor:default}
   .painel{min-height:90px;background:var(--verde-claro);border-radius:12px;padding:14px 16px;font-size:1.05rem;margin-bottom:12px}
@@ -1112,7 +1116,16 @@ function abrirComodo(id){
 /* ---------- montagem da cena ---------- */
 function montarCena(c){
   const palco = document.getElementById("jg-palco");
-  palco.innerHTML = '<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' + c.svg + "</svg>";
+  /* A foto vai num <img> comum (funciona em qualquer navegador; o <image>
+     dentro de SVG falhava em alguns). As zonas ficam num SVG transparente
+     sobreposto, esticado para casar 1:1 com a foto. ?v= fura cache antigo. */
+  const m = c.svg.match(/href="(img\/[^"?]+)"/);
+  const foto = m ? m[1] : null;
+  const zonas = c.svg.replace(/<image[^>]*\/>\s*/, "");
+  palco.innerHTML =
+    (foto ? "<img class='cena-foto' src='" + foto + "?v=3' alt='Foto: " + c.nome + "' " +
+      "onerror=\"this.outerHTML='<div class=cena-erro>⚠️ A foto do ambiente não carregou. Verifique a internet e recarregue a página (Ctrl+F5).</div>'\">" : "") +
+    '<svg class="cena-zonas" viewBox="0 0 800 450" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' + zonas + "</svg>";
   const svg = palco.querySelector("svg");
   svg.addEventListener("click", () => {
     if(modoRevisao || !ronda || ronda.encerrada || ronda.pend) return;
