@@ -269,7 +269,7 @@ const COMODOS = [
   bonus:{p:"Verdadeiro ou falso: tapetes só são perigosos para quem usa bengala.", certaVF:false,
     explica:"Falso! Tapete solto derruba qualquer pessoa — e depois dos 60 anos, o tombo custa caro. É risco para todos."},
   svg:`
-    <image href="img/sala.jpg" x="0" y="0" width="800" height="450" preserveAspectRatio="xMidYMid slice"/>
+    <image href="img/sala.jpg" xlink:href="img/sala.jpg" x="0" y="0" width="800" height="450" preserveAspectRatio="xMidYMid slice"/>
     <g class="hz" data-r="tapete">
       <circle cx="342" cy="308" r="40" fill="transparent"/>
       <g class="marca" opacity="0" stroke="#2e7d32">
@@ -1032,7 +1032,7 @@ function abrirComodo(id){
 /* ---------- montagem da cena ---------- */
 function montarCena(c){
   const palco = document.getElementById("jg-palco");
-  palco.innerHTML = '<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">' + c.svg + "</svg>";
+  palco.innerHTML = '<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' + c.svg + "</svg>";
   const svg = palco.querySelector("svg");
   svg.addEventListener("click", () => {
     if(modoRevisao || !ronda || ronda.encerrada || ronda.pend) return;

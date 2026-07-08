@@ -156,8 +156,10 @@ A Sala já usa foto; os demais ambientes devem migrar pelo mesmo pipeline:
 2. Converter PNG→JPG q85 via System.Drawing (PowerShell) para `img/<ambiente>.jpg`
    (~200 KB). A foto de 1376×768 mapeia para o viewBox 800×450 com fator ~0,586
    (`vb = px * 450/768`; slice corta ~3px nas laterais).
-3. Na cena: `<image href="img/x.jpg" x="0" y="0" width="800" height="450"
-   preserveAspectRatio="xMidYMid slice"/>` + grupos `.hz`/`.sf` só com o círculo de
+3. Na cena: `<image href="img/x.jpg" xlink:href="img/x.jpg" x="0" y="0" width="800"
+   height="450" preserveAspectRatio="xMidYMid slice"/>` (o `xlink:href` duplicado é
+   fallback para navegadores antigos; o svg raiz em `montarCena` já declara o
+   namespace xlink) + grupos `.hz`/`.sf` só com o círculo de
    toque transparente e a marca em grupo com halo branco (ver a Sala como modelo:
    `<g class="marca" opacity="0" stroke="#2e7d32">` com círculo branco width 12 por
    baixo do colorido width 6 — necessário para visibilidade sobre foto).
