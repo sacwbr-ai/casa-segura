@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa Segura — Caça aos Riscos (7 dias)</title>
+<style>
+  :root{
+    --fundo:#faf6ee; --cartao:#fff; --texto:#2b2b2b; --texto-suave:#5a5a5a;
+    --verde:#2e7d32; --verde-claro:#e8f5e9; --azul:#1565c0; --azul-claro:#e3f0fd;
+    --laranja:#e65100; --laranja-claro:#fff3e0; --borda:#ddd2bd;
+    --sombra:0 2px 10px rgba(0,0,0,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:18px}
+  body{font-family:"Segoe UI",Arial,sans-serif;background:var(--fundo);color:var(--texto);line-height:1.5;min-height:100vh}
+  .pagina{max-width:760px;margin:0 auto;padding:16px 14px 60px}
+
+  .tela{display:none}
+  .tela.ativa{display:block;animation:surge .35s ease}
+  @keyframes surge{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  h1{font-size:1.7rem;line-height:1.25;margin-bottom:12px}
+  h2{font-size:1.35rem;line-height:1.3;margin-bottom:10px}
+  p{margin-bottom:12px}
+  .suave{color:var(--texto-suave)}
+  .centro{text-align:center}
+
+  .cartao{background:var(--cartao);border:1px solid var(--borda);border-radius:16px;box-shadow:var(--sombra);padding:22px 20px;margin-bottom:16px}
+
+  button{font-family:inherit;font-size:1.1rem;cursor:pointer;border:none;border-radius:14px;-webkit-tap-highlight-color:transparent}
+  .btn-grande{display:block;width:100%;min-height:64px;padding:14px 20px;background:var(--verde);color:#fff;font-weight:600;box-shadow:var(--sombra);margin-top:8px}
+  .btn-grande:disabled{background:#b9b9b9;cursor:default;box-shadow:none}
+  .btn-grande:not(:disabled):active{transform:scale(.98)}
+  .btn-azul{background:var(--azul)}
+  .btn-laranja{background:var(--laranja)}
+  .btn-zap{background:#25d366}
+  .btn-opcao{display:block;width:100%;min-height:56px;padding:12px 16px;margin-top:10px;background:#fff;border:2px solid var(--borda);border-radius:12px;font-size:1.05rem;text-align:left}
+  .btn-opcao.certa{border-color:var(--verde);background:var(--verde-claro)}
+  .btn-opcao.errada{border-color:#c0392b;background:#fdecea}
+  .link-discreto{background:none;color:var(--texto-suave);text-decoration:underline;font-size:.95rem;padding:10px;display:inline-block}
+
+  input[type=text], textarea, select{width:100%;font-family:inherit;font-size:1.15rem;padding:14px;border:2px solid var(--borda);border-radius:12px;background:#fff}
+  textarea{min-height:110px;resize:vertical}
+  label{font-weight:600;display:block;margin:14px 0 6px}
+
+  .painel-topo{display:flex;gap:10px;margin-bottom:14px}
+  .painel-topo .mostrador{flex:1;background:#fff;border:1px solid var(--borda);border-radius:12px;padding:10px 12px;text-align:center}
+  .mostrador .rotulo{font-size:.82rem;color:var(--texto-suave)}
+  .mostrador .valor{font-size:1.3rem;font-weight:700;color:var(--verde)}
+  .mostrador .valor.alerta{color:#c0392b}
+  .barra-fundo{height:10px;background:#eee;border-radius:999px;overflow:hidden;margin-top:6px}
+  .barra-cheia{height:100%;width:100%;background:var(--verde);border-radius:999px;transition:width 1s linear}
+  .barra-cheia.meio{background:#e6a23c}
+  .barra-cheia.fim{background:#c0392b}
+
+  .mapa{display:grid;grid-template-columns:1fr;gap:10px}
+  @media(min-width:560px){.mapa{grid-template-columns:1fr 1fr}}
+  .card-comodo{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:#fff;border:2px solid var(--borda);border-radius:14px;font-size:1.05rem;text-align:left;min-height:76px}
+  .card-comodo .icone{font-size:2rem}
+  .card-comodo .info{flex:1}
+  .card-comodo .nome{font-weight:700}
+  .card-comodo .estado{font-size:.9rem;color:var(--texto-suave)}
+  .card-comodo.bloqueado{opacity:.55;cursor:default;background:#f2ede1}
+  .card-comodo.completo{border-color:var(--verde);background:var(--verde-claro)}
+  .card-comodo:not(.bloqueado):active{transform:scale(.99)}
+
+  .palco{width:100%;background:#fff;border:1px solid var(--borda);border-radius:14px;overflow:hidden;margin-bottom:12px}
+  .palco svg{display:block;width:100%;height:auto}
+  /* nada de cursor especial nos objetos: o mouse não pode entregar os alvos */
+  .hz,.sf{cursor:default}
+  .painel{min-height:90px;background:var(--verde-claro);border-radius:12px;padding:14px 16px;font-size:1.05rem;margin-bottom:12px}
+  .painel .btn-grande{min-height:54px;margin-top:12px}
+
+  .etiqueta{display:inline-block;font-size:.95rem;font-weight:600;padding:5px 14px;border-radius:999px;margin-bottom:10px}
+  .etiqueta.laranja{background:var(--laranja-claro);color:var(--laranja)}
+  .etiqueta.verde{background:var(--verde-claro);color:var(--verde)}
+  .etiqueta.azul{background:var(--azul-claro);color:var(--azul)}
+
+  .aviso{font-size:.95rem;margin-top:10px;min-height:1.3em}
+  .lista-ideias{margin-top:14px}
+  .lista-ideias .item{background:#f7f3e8;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:.95rem}
+  .resumo-final{background:#f7f3e8;border-radius:12px;padding:14px 16px;margin:10px 0;font-size:1rem}
+  .resumo-final div{margin-bottom:5px}
+  .rodape{text-align:center;color:var(--texto-suave);font-size:.85rem;margin-top:30px}
+</style>
+</head>
+<body>
+<div class="pagina">
+
+  <!-- ============ INÍCIO ============ -->
+  <section class="tela ativa" id="tela-inicio">
+    <div class="cartao centro">
+      <div style="font-size:3rem">🏠</div>
+      <h1>Casa Segura<br><span style="font-size:1.1rem;font-weight:400" class="suave">Caça aos Riscos · rodada de 7 dias</span></h1>
+      <p style="text-align:left">Uma casa térrea esconde <strong>35 perigos de queda</strong> — misturados a coisas que só <em>parecem</em> perigosas. A cada dia da rodada abre um ambiente novo, da sala ao jardim. Você faz <strong>uma única ronda de inspeção</strong> em cada um: escolha bem onde tocar!</p>
+      <div style="text-align:left;background:var(--verde-claro);border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:1rem">
+        🎟️ <strong>8 fichas</strong> de inspeção por ambiente — cada toque em um objeto gasta 1<br>
+        ⏱️ <strong>90 segundos</strong> de ronda (o tempo para enquanto você lê)<br>
+        ⚠️ Perigo achado: <strong>+10</strong> · perigo escondido especial: <strong>+20</strong><br>
+        🧠 Acertar a melhor solução: <strong>+5</strong> · pergunta bônus do dia: <strong>+5</strong><br>
+        🎯 Fichas economizadas (ambiente completo): <strong>+3 cada</strong><br>
+        💡 Suas ideias avaliadas pela <strong>banca da IA</strong>: pontos extras no dia seguinte
+      </div>
+      <label for="inp-apelido" style="text-align:left">Escolha seu apelido para o placar:</label>
+      <input type="text" id="inp-apelido" maxlength="20" placeholder="Ex.: Vovó Ana, Carlos62...">
+      <button class="btn-grande" onclick="entrar()">Entrar na casa 👉</button>
+      <div class="aviso" id="inicio-aviso"></div>
+    </div>
+  </section>
+
+  <!-- ============ MAPA ============ -->
+  <section class="tela" id="tela-mapa">
+    <div class="cartao">
+      <h2 id="mapa-ola">🏠 A casa</h2>
+      <div class="painel-topo">
+        <div class="mostrador"><div class="rotulo">📅 Dia da rodada</div><div class="valor" id="mapa-dia">–</div></div>
+        <div class="mostrador"><div class="rotulo">⭐ Seus pontos</div><div class="valor" id="mapa-pontos">0</div></div>
+        <div class="mostrador"><div class="rotulo">🔍 Perigos achados</div><div class="valor" id="mapa-achados">0/35</div></div>
+      </div>
+      <p class="suave" id="mapa-msg-dia"></p>
+      <div class="mapa" id="mapa-cards"></div>
+      <button class="btn-grande btn-laranja" onclick="mostrarTela('tela-ideia')">💡 Tenho uma ideia (vale pontos!)</button>
+      <button class="btn-grande btn-azul" onclick="abrirPlacar()">🏆 Minha pontuação e placar</button>
+    </div>
+  </section>
+
+  <!-- ============ PRÉ-RONDA ============ -->
+  <section class="tela" id="tela-preronda">
+    <div class="cartao">
+      <span class="etiqueta laranja" id="pr-etiqueta">Dia 1</span>
+      <h2 id="pr-titulo"></h2>
+      <p id="pr-intro"></p>
+      <div style="background:var(--laranja-claro);border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:1rem">
+        <strong>Atenção: você tem UMA única ronda neste ambiente.</strong><br>
+        🎟️ 8 fichas — cada toque em um objeto gasta 1<br>
+        ⏱️ 90 segundos de busca (a leitura das lições não conta tempo)<br>
+        🤔 Nem tudo que parece perigoso é perigo — e um dos riscos está <strong>escondido no que falta</strong> (vale 20!)
+      </div>
+      <button class="btn-grande" onclick="iniciarRonda()">Iniciar a ronda 🔍</button>
+      <div class="centro"><button class="link-discreto" onclick="voltarMapa()">voltar à casa (a ronda fica para depois)</button></div>
+    </div>
+  </section>
+
+  <!-- ============ JOGO (ronda) ============ -->
+  <section class="tela" id="tela-jogo">
+    <div class="cartao">
+      <span class="etiqueta laranja" id="jg-etiqueta">Dia 1</span>
+      <h2 id="jg-titulo"></h2>
+      <div class="painel-topo">
+        <div class="mostrador"><div class="rotulo">🎟️ Fichas</div><div class="valor" id="jg-fichas">8</div></div>
+        <div class="mostrador"><div class="rotulo">⏱️ Tempo</div><div class="valor" id="jg-tempo">90</div>
+          <div class="barra-fundo"><div class="barra-cheia" id="jg-barra"></div></div></div>
+        <div class="mostrador"><div class="rotulo">⚠️ Achados</div><div class="valor" id="jg-achados">0/5</div></div>
+      </div>
+      <div class="palco" id="jg-palco"></div>
+      <div class="painel" id="jg-painel"></div>
+      <button class="btn-grande" id="jg-btn-voltar" style="display:none" onclick="voltarMapa()">Voltar à casa ➜</button>
+      <div class="centro"><button class="link-discreto" id="jg-btn-encerrar" onclick="desistirRonda()">encerrar a ronda agora</button></div>
+    </div>
+  </section>
+
+  <!-- ============ IDEIA ============ -->
+  <section class="tela" id="tela-ideia">
+    <div class="cartao">
+      <span class="etiqueta verde">Banca da IA</span>
+      <h2>💡 Tenho uma ideia</h2>
+      <p>Conhece um perigo, uma solução ou uma situação do dia a dia que o jogo ainda não mostra? Conte aqui! A banca da IA avalia todas as ideias à noite e <strong>publica os pontos extras no dia seguinte</strong>, com o seu apelido. Ideias inéditas valem mais.</p>
+      <label for="id-tipo">Tipo de ideia:</label>
+      <select id="id-tipo">
+        <option value="Novo risco">⚠️ Um perigo que o jogo não mostra</option>
+        <option value="Nova solução">🛠️ Uma solução ou melhoria nova</option>
+        <option value="Situação do dia a dia">🌙 Uma situação do dia a dia</option>
+      </select>
+      <label for="id-comodo">Ambiente relacionado:</label>
+      <select id="id-comodo"></select>
+      <label for="id-texto">Sua ideia:</label>
+      <textarea id="id-texto" placeholder="Ex.: o cachorro pequeno que corre entre as pernas..."></textarea>
+      <button class="btn-grande" onclick="enviarIdeia()">Enviar para a banca ✅</button>
+      <div class="aviso" id="ideia-aviso"></div>
+      <div class="lista-ideias" id="ideia-lista"></div>
+      <div class="centro"><button class="link-discreto" onclick="voltarMapa()">voltar à casa</button></div>
+    </div>
+  </section>
+
+  <!-- ============ PLACAR ============ -->
+  <section class="tela" id="tela-placar">
+    <div class="cartao">
+      <span class="etiqueta verde">Placar</span>
+      <h2>🏆 Minha pontuação</h2>
+      <div class="painel-topo">
+        <div class="mostrador"><div class="rotulo">⭐ Pontos da busca</div><div class="valor" id="pl-pontos">0</div></div>
+        <div class="mostrador"><div class="rotulo">🏠 Rondas feitas</div><div class="valor" id="pl-completos">0/7</div></div>
+      </div>
+      <div id="pl-detalhe" style="margin-bottom:12px"></div>
+      <p class="suave">Os pontos extras das suas ideias são somados pela banca da IA e aparecem no placar oficial na manhã seguinte.</p>
+      <button class="btn-grande btn-zap" onclick="enviarPontuacaoZap()">📱 Enviar pontuação por WhatsApp</button>
+      <button class="btn-grande btn-azul" onclick="copiarPontuacao()">📄 Copiar pontuação</button>
+      <div class="aviso" id="pl-aviso"></div>
+      <div class="centro" style="margin-top:14px">
+        <button class="link-discreto" onclick="voltarMapa()">voltar à casa</button>
+        <button class="link-discreto" onclick="reiniciarJogo()">recomeçar do zero</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="rodape">Casa Segura — Movimento sem quedas · jogo educativo gratuito · sem apostas · nenhum dado pessoal é coletado</div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÃO DA RODADA
+   - DATA_INICIO: dia 1 da rodada (AAAA-MM-DD); o ambiente N abre no dia N.
+   - PLANILHA_URL: Apps Script para pontuações e ideias (README.md).
+   - MODO_TESTE: true libera os 7 ambientes e permite refazer rondas
+     (para revisão). Coloque false antes de publicar a rodada.
+===================================================================== */
+const CONFIG = {
+  DATA_INICIO: "2026-07-13",
+  PLANILHA_URL: "",
+  MODO_TESTE: true
+};
+
+const FICHAS_POR_AMBIENTE = 8;
+const TEMPO_RONDA = 90;            // segundos de busca
+const PONTOS_RISCO = 10, PONTOS_INVISIVEL = 20;
+const PONTOS_SOLUCAO = 5, PONTOS_BONUS_VF = 5, PONTOS_FICHA = 3;
+
+/* ---------- proteção anti-toque-duplo ---------- */
+let _ultimoToque = 0;
+function toqueValido(){
+  const agora = Date.now();
+  if(agora - _ultimoToque < 350) return false;
+  _ultimoToque = agora;
+  return true;
+}
+
+/* =====================================================================
+   OS 7 AMBIENTES
+   riscos: perigos reais (um deles "invisível", vale 20 — é uma ausência
+   ou situação, não um objeto errado). seguros: distratores que parecem
+   suspeitos mas estão certos — tocar gasta ficha e ensina o porquê.
+   SVG: <g class="hz" data-r="id"> para riscos, <g class="sf" data-s="id">
+   para itens seguros; cada grupo tem um círculo .marca oculto.
+===================================================================== */
+const COMODOS = [
+{ id:"sala", nome:"Sala", icone:"🛋️", dia:1,
+  intro:"O ambiente onde a família passa o dia. Há 5 perigos — e coisas que só parecem perigosas.",
+  riscos:{
+    tapete:{licao:"🧶 Tapete solto, sem base de borracha: o campeão dos tropeços!",
+      pergunta:{p:"Qual a melhor solução para o tapete solto?",
+        ops:["Tirar da área de passagem ou fixar com base antiderrapante","Colocar um tapete maior por cima","Avisar todos para pisarem devagar"], certa:0,
+        explica:"Tapete em área de passagem só fica se tiver base antiderrapante — senão, é melhor tirar."}},
+    fio:{licao:"🔌 Fio da TV atravessando o chão: quase invisível à noite. Prenda os fios junto à parede."},
+    chinelo:{licao:"🩴 Chinelos largados no caminho — e chinelo folgado no pé! Calçado fechado no calcanhar segura melhor."},
+    banquinho:{licao:"🪜 Banquinho para alcançar a estante alta: causa quedas graves.",
+      pergunta:{p:"Qual a melhor solução para não precisar do banquinho?",
+        ops:["Guardar as coisas mais usadas na altura das mãos","Subir só quando tiver alguém em casa","Usar uma cadeira, que é mais firme"], certa:0,
+        explica:"O certo é reorganizar: o que se usa todo dia fica entre a cintura e os olhos. Cadeira é tão perigosa quanto banquinho."}},
+    sofa:{invisivel:true, licao:"🛋️ O risco escondido: sofá baixo e fundo, sem braços firmes. Levantar dele é um dos momentos clássicos de queda. Assento mais alto e firme (ou almofada rígida) e braços de apoio resolvem."}
+  },
+  seguros:{
+    tapeteok:"✅ Este tapete tem borda de borracha antiderrapante — vê a faixa escura? Assim pode ficar.",
+    fiopreso:"✅ Este fio está preso no rodapé com presilhas, fora do caminho. É assim que se faz.",
+    poltrona:"✅ Poltrona de assento alto e braços firmes: apoia e levanta com segurança. O oposto do sofá fundo!",
+    luminaria:"✅ Luminária de pé firme, num canto: mais luz na sala é menos tropeço.",
+    telefone:"✅ Telefone na mesinha, ao alcance: ninguém precisa correr para atender."
+  },
+  bonus:{p:"Verdadeiro ou falso: tapetes só são perigosos para quem usa bengala.", certaVF:false,
+    explica:"Falso! Tapete solto derruba qualquer pessoa — e depois dos 60 anos, o tombo custa caro. É risco para todos."},
+  svg:`
+    <rect x="0" y="0" width="800" height="300" fill="#f7efe2"/>
+    <rect x="0" y="300" width="800" height="150" fill="#d8bf9a"/>
+    <line x1="0" y1="300" x2="800" y2="300" stroke="#b89b6f" stroke-width="3"/>
+    <rect x="250" y="55" width="130" height="100" fill="#bfe0f5" stroke="#8a6d3b" stroke-width="6"/>
+    <line x1="315" y1="55" x2="315" y2="155" stroke="#8a6d3b" stroke-width="5"/>
+    <rect x="620" y="150" width="150" height="12" fill="#8a6d3b"/>
+    <rect x="655" y="118" width="34" height="32" fill="#c96f4a" rx="4"/>
+    <g class="sf" data-s="poltrona">
+      <rect x="560" y="185" width="90" height="42" rx="10" fill="#4a7a5a"/>
+      <rect x="560" y="222" width="90" height="46" rx="8" fill="#5a8a6a"/>
+      <rect x="548" y="215" width="16" height="55" rx="8" fill="#3a6a4a"/>
+      <rect x="646" y="215" width="16" height="55" rx="8" fill="#3a6a4a"/>
+      <circle cx="605" cy="230" r="52" fill="transparent"/>
+      <circle class="marca" cx="605" cy="230" r="46" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="sofa">
+      <rect x="30" y="200" width="170" height="44" rx="10" fill="#6a4f8f"/>
+      <rect x="30" y="238" width="170" height="60" rx="8" fill="#7d5ba6"/>
+      <circle cx="115" cy="242" r="46" fill="transparent"/>
+      <circle class="marca" cx="115" cy="242" r="40" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="luminaria">
+      <rect x="224" y="190" width="8" height="108" fill="#8a6d3b"/>
+      <path d="M204 190 h48 l-10 -26 h-28 Z" fill="#e8d8a0"/>
+      <circle cx="228" cy="205" r="42" fill="transparent"/>
+      <circle class="marca" cx="228" cy="205" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <rect x="255" y="245" width="165" height="58" fill="#8a6d3b" rx="6"/>
+    <rect x="270" y="172" width="135" height="78" fill="#333" rx="6"/>
+    <rect x="277" y="179" width="121" height="58" fill="#5a8fbf" rx="3"/>
+    <g class="sf" data-s="fiopreso">
+      <path d="M268 296 L140 296" fill="none" stroke="#333" stroke-width="5"/>
+      <rect x="170" y="292" width="8" height="9" fill="#888"/>
+      <rect x="220" y="292" width="8" height="9" fill="#888"/>
+      <circle cx="200" cy="296" r="34" fill="transparent"/>
+      <circle class="marca" cx="200" cy="296" r="28" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="fio">
+      <path d="M418 260 C 448 305, 482 330, 540 345" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="490" cy="322" r="44" fill="transparent"/>
+      <circle class="marca" cx="490" cy="322" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="tapete">
+      <rect x="318" y="362" width="170" height="50" rx="24" fill="#c0392b"/>
+      <rect x="336" y="372" width="134" height="30" rx="15" fill="#e74c3c"/>
+      <circle cx="400" cy="390" r="50" fill="transparent"/>
+      <circle class="marca" cx="400" cy="390" r="44" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="tapeteok">
+      <rect x="545" y="378" width="112" height="36" rx="14" fill="#222"/>
+      <rect x="553" y="384" width="96" height="24" rx="10" fill="#4a8ac0"/>
+      <circle cx="600" cy="396" r="44" fill="transparent"/>
+      <circle class="marca" cx="600" cy="396" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="telefone">
+      <rect x="48" y="330" width="72" height="12" rx="4" fill="#b07d3f"/>
+      <rect x="56" y="342" width="8" height="60" fill="#8a6d3b"/>
+      <rect x="104" y="342" width="8" height="60" fill="#8a6d3b"/>
+      <rect x="66" y="308" width="36" height="22" rx="6" fill="#444"/>
+      <circle cx="80" cy="335" r="34" fill="transparent"/>
+      <circle class="marca" cx="80" cy="335" r="28" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="chinelo">
+      <ellipse cx="235" cy="405" rx="27" ry="11" fill="#7d5ba6"/>
+      <ellipse cx="270" cy="416" rx="27" ry="11" fill="#7d5ba6" transform="rotate(18 270 416)"/>
+      <circle cx="250" cy="410" r="42" fill="transparent"/>
+      <circle class="marca" cx="250" cy="410" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="banquinho">
+      <rect x="655" y="330" width="80" height="14" rx="4" fill="#b07d3f"/>
+      <rect x="662" y="344" width="12" height="52" fill="#8a6d3b"/>
+      <rect x="716" y="344" width="12" height="52" fill="#8a6d3b"/>
+      <circle cx="695" cy="355" r="48" fill="transparent"/>
+      <circle class="marca" cx="695" cy="355" r="42" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>`
+},
+{ id:"cozinha", nome:"Cozinha", icone:"🍳", dia:2,
+  intro:"Onde se cozinha com amor — e onde mora o chão molhado. 5 perigos escondidos.",
+  riscos:{
+    agua:{licao:"💧 Água no chão perto da pia.",
+      pergunta:{p:"Qual a melhor atitude com o chão molhado?",
+        ops:["Secar na hora, sempre","Esperar secar sozinho, evitando passar ali","Andar de meias para não escorregar"], certa:0,
+        explica:"Secar na hora! Esperar é deixar a armadilha armada — e meia em chão liso escorrega ainda mais que chinelo."}},
+    pano:{licao:"🧺 Pano de chão estendido na frente da pia: escorrega como sabão. Tapete de borracha antiderrapante é o certo."},
+    gaveta:{licao:"🗄️ Gaveta aberta na altura das pernas: tropeço e pancada dolorida. O hábito de fechar na hora protege."},
+    lampada:{licao:"💡 Lâmpada queimada há semanas.",
+      pergunta:{p:"Qual a melhor solução para a lâmpada queimada?",
+        ops:["Trocar já — e por uma mais forte","Cozinhar só durante o dia","Deixar a porta da geladeira aberta para iluminar"], certa:0,
+        explica:"Trocar sem adiar (peça ajuda se precisar de escada!). Na cozinha, enxergar bem evita queda, corte e queimadura."}},
+    armario:{invisivel:true, licao:"🍳 O risco escondido: as panelas pesadas de todo dia guardadas no armário ALTO. Cada refeição vira uma esticada perigosa. Guarde o que mais usa entre a cintura e os olhos."}
+  },
+  seguros:{
+    tapeteok:"✅ Tapete de borracha com relevo em frente ao fogão: não escorrega nem enrola.",
+    lixeira:"✅ Lixeira encostada no canto, fora da passagem. Cada coisa no seu lugar é chão livre.",
+    luzpia:"✅ Luminária forte sobre a pia: aqui se trabalha com faca e vidro — luz boa é segurança.",
+    portas:"✅ Portas e gavetas da pia fechadas: é esse hábito que evita a canelada e o tropeço."
+  },
+  bonus:{p:"Verdadeiro ou falso: chão molhado só é perigoso se tiver sabão.", certaVF:false,
+    explica:"Falso! Água pura em piso liso já é escorregão na certa — com sabão só fica pior. Secou, protegeu."},
+  svg:`
+    <rect x="0" y="0" width="800" height="300" fill="#eef0e2"/>
+    <rect x="0" y="300" width="800" height="150" fill="#cfc7b5"/>
+    <line x1="0" y1="300" x2="800" y2="300" stroke="#a89a80" stroke-width="3"/>
+    <rect x="30" y="120" width="250" height="120" fill="#dceef2"/>
+    <line x1="30" y1="180" x2="280" y2="180" stroke="#c2dde4" stroke-width="3"/>
+    <line x1="155" y1="120" x2="155" y2="240" stroke="#c2dde4" stroke-width="3"/>
+    <g class="sf" data-s="luzpia">
+      <line x1="160" y1="0" x2="160" y2="40" stroke="#555" stroke-width="5"/>
+      <path d="M132 40 h56 l-13 24 h-30 Z" fill="#7a7a6a"/>
+      <circle cx="160" cy="74" r="11" fill="#ffe082" stroke="#f4c542" stroke-width="3"/>
+      <path d="M138 92 l-10 10 M182 92 l10 10 M160 96 v14" stroke="#f4c542" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="160" cy="70" r="44" fill="transparent"/>
+      <circle class="marca" cx="160" cy="70" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <rect x="40" y="240" width="240" height="16" fill="#b0a08a"/>
+    <g class="sf" data-s="portas">
+      <rect x="50" y="256" width="220" height="100" fill="#8a6d3b"/>
+      <line x1="160" y1="256" x2="160" y2="356" stroke="#6a4e28" stroke-width="4"/>
+      <circle cx="148" cy="306" r="5" fill="#d8c890"/><circle cx="172" cy="306" r="5" fill="#d8c890"/>
+      <circle cx="160" cy="300" r="46" fill="transparent"/>
+      <circle class="marca" cx="160" cy="300" r="40" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <rect x="100" y="232" width="90" height="12" fill="#cfd8dc"/>
+    <path d="M145 232 v-22 h26 v10" fill="none" stroke="#888" stroke-width="6"/>
+    <g class="hz" data-r="armario">
+      <rect x="310" y="60" width="150" height="56" fill="#8a6d3b"/>
+      <rect x="320" y="68" width="60" height="40" fill="#a0794a"/>
+      <rect x="390" y="68" width="60" height="40" fill="#a0794a"/>
+      <circle cx="385" cy="88" r="55" fill="transparent"/>
+      <circle class="marca" cx="385" cy="88" r="48" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <rect x="310" y="250" width="100" height="106" fill="#dfdfdf" stroke="#b5b5b5" stroke-width="3"/>
+    <rect x="320" y="258" width="80" height="30" fill="#3a3a3a" rx="4"/>
+    <g class="hz" data-r="lampada">
+      <line x1="530" y1="0" x2="530" y2="48" stroke="#555" stroke-width="5"/>
+      <path d="M502 48 h56 l-13 24 h-30 Z" fill="#7a7a6a"/>
+      <circle cx="530" cy="82" r="11" fill="#d8d4c0" stroke="#b5b09a" stroke-width="3"/>
+      <text x="558" y="66" font-size="22" fill="#8a8a7a" font-family="Segoe UI, Arial">zzt...</text>
+      <circle cx="530" cy="72" r="46" fill="transparent"/>
+      <circle class="marca" cx="530" cy="72" r="40" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="gaveta">
+      <rect x="450" y="260" width="130" height="96" fill="#8a6d3b"/>
+      <rect x="428" y="294" width="90" height="28" fill="#a0794a" stroke="#7a5a30" stroke-width="3"/>
+      <rect x="434" y="322" width="84" height="9" fill="#6a4e28"/>
+      <circle cx="470" cy="310" r="46" fill="transparent"/>
+      <circle class="marca" cx="470" cy="310" r="40" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <rect x="620" y="150" width="110" height="225" rx="8" fill="#e9e9e9" stroke="#c0c0c0" stroke-width="3"/>
+    <line x1="632" y1="200" x2="632" y2="250" stroke="#a0a0a0" stroke-width="6"/>
+    <g class="sf" data-s="lixeira">
+      <path d="M750 340 h40 l-6 55 h-28 Z" fill="#6a8a6a"/>
+      <rect x="746" y="332" width="48" height="10" rx="4" fill="#5a7a5a"/>
+      <circle cx="770" cy="362" r="38" fill="transparent"/>
+      <circle class="marca" cx="770" cy="362" r="32" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="agua">
+      <ellipse cx="215" cy="400" rx="46" ry="14" fill="#9cc7e8" opacity="0.85"/>
+      <ellipse cx="245" cy="390" rx="15" ry="6" fill="#b8daf2" opacity="0.85"/>
+      <circle cx="220" cy="397" r="48" fill="transparent"/>
+      <circle class="marca" cx="220" cy="397" r="42" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="pano">
+      <rect x="52" y="380" width="105" height="28" rx="10" fill="#c9c9c9"/>
+      <path d="M60 388 q 20 -8 40 0 q 20 8 45 0" fill="none" stroke="#a8a8a8" stroke-width="4"/>
+      <circle cx="105" cy="394" r="44" fill="transparent"/>
+      <circle class="marca" cx="105" cy="394" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="tapeteok">
+      <rect x="315" y="378" width="92" height="28" rx="10" fill="#222"/>
+      <rect x="322" y="383" width="78" height="18" rx="7" fill="#3a3a3a"/>
+      <circle cx="360" cy="392" r="42" fill="transparent"/>
+      <circle class="marca" cx="360" cy="392" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>`
+},
+{ id:"quarto", nome:"Quarto", icone:"🛏️", dia:3,
+  intro:"O perigo mora no levantar da cama, principalmente à noite. 5 perigos escondidos.",
+  riscos:{
+    tapete:{licao:"🧶 Tapete solto ao lado da cama: no primeiro passo do dia, ainda sonolento, ele desliza."},
+    sapatos:{licao:"👞 Sapatos espalhados pelo chão.",
+      pergunta:{p:"Qual o melhor destino para os sapatos?",
+        ops:["Sapateira ou armário, sempre no mesmo lugar","Empurrar para debaixo da cama","Deixar todos perto da porta"], certa:0,
+        explica:"Lugar fixo e fora do caminho. Debaixo da cama vira armadilha na hora de procurar; na porta, tropeço na entrada."}},
+    colcha:{licao:"🛌 Colcha comprida arrastando no chão.",
+      pergunta:{p:"Qual a melhor solução para a colcha?",
+        ops:["Deixar rente ao colchão, sem tocar o chão","Prender embaixo do colchão só do lado da parede","Trocar por uma colcha mais pesada"], certa:0,
+        explica:"Roupa de cama rente ao colchão: o pé não enrosca na barra ao levantar — principalmente na pressa da madrugada."}},
+    mala:{licao:"🧳 Mala no caminho do guarda-roupa: obstáculo baixo é o mais traiçoeiro. Em cima do armário ou embaixo da cama (bem no fundo)."},
+    interruptor:{invisivel:true, licao:"🔦 O risco escondido: o interruptor fica LONGE da cama — para acender, é preciso atravessar o quarto no escuro. Abajur ao alcance da mão ou luz de sensor no rodapé resolve a madrugada."}
+  },
+  seguros:{
+    cama:"✅ Cama na altura certa: sentado na beirada, os pés alcançam bem o chão. Nem baixa demais, nem alta demais.",
+    pantufas:"✅ Pantufas fechadas, alinhadas ao lado da cama: calçado firme à mão para o primeiro passo.",
+    guardaroupa:"✅ Guarda-roupa com as portas fechadas: porta aberta na altura do rosto e do joelho é pancada certa.",
+    cortina:"✅ Cortina amarrada, sem arrastar no chão: tecido solto no chão é tropeço."
+  },
+  bonus:{p:"Verdadeiro ou falso: metade das quedas de idosos acontece à noite ou ao levantar da cama.", certaVF:true,
+    explica:"Verdadeiro! O corpo acorda antes do equilíbrio. Por isso luz de madrugada e caminho livre valem tanto."},
+  svg:`
+    <rect x="0" y="0" width="800" height="300" fill="#ece4f0"/>
+    <rect x="0" y="300" width="800" height="150" fill="#d8bf9a"/>
+    <line x1="0" y1="300" x2="800" y2="300" stroke="#b89b6f" stroke-width="3"/>
+    <rect x="330" y="50" width="130" height="100" fill="#bfe0f5" stroke="#8a6d3b" stroke-width="6"/>
+    <g class="sf" data-s="cortina">
+      <path d="M322 50 q -18 50 -8 100 l -18 0 q -6 -50 6 -100 Z" fill="#c98bb0"/>
+      <path d="M298 95 q 14 8 26 0" fill="none" stroke="#8a5a80" stroke-width="5"/>
+      <circle cx="308" cy="100" r="36" fill="transparent"/>
+      <circle class="marca" cx="308" cy="100" r="30" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="cama">
+      <rect x="40" y="190" width="60" height="35" rx="8" fill="#fff"/>
+      <rect x="30" y="215" width="230" height="75" rx="8" fill="#7d5ba6"/>
+      <rect x="24" y="180" width="12" height="110" rx="4" fill="#5a4080"/>
+      <circle cx="115" cy="245" r="55" fill="transparent"/>
+      <circle class="marca" cx="115" cy="245" r="48" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="colcha">
+      <path d="M258 235 q 30 32 20 72 l -30 0 q 8 -40 -14 -68 Z" fill="#9575b8"/>
+      <circle cx="262" cy="286" r="42" fill="transparent"/>
+      <circle class="marca" cx="262" cy="286" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="guardaroupa">
+      <rect x="560" y="90" width="170" height="210" fill="#8a6d3b" rx="6"/>
+      <line x1="645" y1="90" x2="645" y2="300" stroke="#6a4e28" stroke-width="4"/>
+      <circle cx="630" cy="195" r="6" fill="#d8c890"/><circle cx="660" cy="195" r="6" fill="#d8c890"/>
+      <circle cx="628" cy="180" r="52" fill="transparent"/>
+      <circle class="marca" cx="628" cy="180" r="46" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="interruptor">
+      <rect x="756" y="168" width="26" height="40" rx="4" fill="#fff" stroke="#aaa" stroke-width="3"/>
+      <rect x="764" y="179" width="10" height="16" fill="#ccc"/>
+      <circle cx="769" cy="188" r="42" fill="transparent"/>
+      <circle class="marca" cx="769" cy="188" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="pantufas">
+      <ellipse cx="38" cy="396" rx="22" ry="9" fill="#c98bb0"/>
+      <ellipse cx="66" cy="396" rx="22" ry="9" fill="#c98bb0"/>
+      <circle cx="52" cy="396" r="34" fill="transparent"/>
+      <circle class="marca" cx="52" cy="396" r="28" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="sapatos">
+      <ellipse cx="165" cy="408" rx="28" ry="10" fill="#5a4a3a"/>
+      <ellipse cx="208" cy="420" rx="28" ry="10" fill="#5a4a3a" transform="rotate(15 208 420)"/>
+      <ellipse cx="132" cy="424" rx="26" ry="9" fill="#7a5a40" transform="rotate(-12 132 424)"/>
+      <circle cx="170" cy="415" r="44" fill="transparent"/>
+      <circle class="marca" cx="170" cy="415" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="tapete">
+      <rect x="305" y="368" width="135" height="40" rx="18" fill="#c0392b"/>
+      <rect x="320" y="376" width="105" height="24" rx="12" fill="#e74c3c"/>
+      <circle cx="372" cy="388" r="50" fill="transparent"/>
+      <circle class="marca" cx="372" cy="388" r="44" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="mala">
+      <rect x="480" y="352" width="90" height="55" rx="8" fill="#4a6f8a"/>
+      <rect x="510" y="340" width="30" height="12" rx="6" fill="#3a5a70"/>
+      <circle cx="525" cy="378" r="46" fill="transparent"/>
+      <circle class="marca" cx="525" cy="378" r="40" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>`
+},
+{ id:"banheiro", nome:"Banheiro", icone:"🚿", dia:4,
+  intro:"O cômodo das quedas mais graves da casa. 5 perigos escondidos.",
+  riscos:{
+    tapete:{licao:"🧺 Tapete de pano comum, sem borracha: no piso liso do banheiro, é um patinete."},
+    frascos:{licao:"🧴 Frascos de xampu no chão do box.",
+      pergunta:{p:"Qual a melhor solução para os frascos?",
+        ops:["Suporte na parede, na altura das mãos","Juntar todos num canto do box","Levar os frascos a cada banho e devolver depois"], certa:0,
+        explica:"Suporte na parede: abaixar-se em piso molhado e ensaboado é das manobras mais perigosas que existem."}},
+    toalha:{licao:"🧻 Toalha caída no chão: molhada, gruda no piso e esconde o escorregão. Pendure sempre."},
+    degrau:{licao:"⚠️ Degrau na porta do banheiro, da mesma cor do piso.",
+      pergunta:{p:"Qual a melhor solução para o degrau?",
+        ops:["Fita antiderrapante de cor viva — ou rampa","Pintar da mesma cor do piso","Avisar as visitas sobre o degrau"], certa:0,
+        explica:"Sinalizar com cor viva e textura (ou eliminar com rampa). O que se vê, não derruba."}},
+    boxsembarra:{invisivel:true, licao:"🚿 O risco escondido: o box NÃO tem barra de apoio! Ensaboado, de olhos fechados, todo mundo procura onde se segurar — e a parede lisa não segura ninguém. Barra fixada na alvenaria é a reforma que mais salva no banheiro."}
+  },
+  seguros:{
+    toalheiro:"✅ Toalheiro no lugar certo, para a toalha — só nunca o use como apoio de peso: ele não aguenta uma pessoa. Para apoiar, só barra de verdade.",
+    tapeteok:"✅ Tapete de saída do box com ventosas de borracha: agarra o piso e seca o pé com segurança.",
+    banco:"✅ Banco de banho firme dentro do box: ensaboar os pés SENTADO é o jeito mais seguro que existe.",
+    suporte:"✅ Frascos no suporte de parede, na altura das mãos: nada no chão, nada de se abaixar.",
+    luz:"✅ Luz clara e forte no teto: banheiro é lugar de enxergar bem cada apoio e cada piso."
+  },
+  bonus:{p:"Verdadeiro ou falso: o banheiro é o cômodo onde acontecem as quedas mais graves da casa.", certaVF:true,
+    explica:"Verdadeiro! Piso molhado + superfícies duras + pouco espaço = as piores quedas. Barra, banco e antiderrapante mudam tudo."},
+  svg:`
+    <rect x="0" y="0" width="800" height="300" fill="#e8f4f8"/>
+    <rect x="0" y="300" width="800" height="150" fill="#d3dde2"/>
+    <line x1="0" y1="300" x2="800" y2="300" stroke="#a8b8c0" stroke-width="3"/>
+    <line x1="0" y1="150" x2="800" y2="150" stroke="#cfe4ec" stroke-width="3"/>
+    <line x1="200" y1="0" x2="200" y2="300" stroke="#cfe4ec" stroke-width="3"/>
+    <line x1="400" y1="0" x2="400" y2="300" stroke="#cfe4ec" stroke-width="3"/>
+    <g class="sf" data-s="luz">
+      <line x1="300" y1="0" x2="300" y2="30" stroke="#555" stroke-width="5"/>
+      <circle cx="300" cy="48" r="14" fill="#ffe082" stroke="#f4c542" stroke-width="3"/>
+      <path d="M278 66 l-10 10 M322 66 l10 10 M300 70 v14" stroke="#f4c542" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="300" cy="55" r="42" fill="transparent"/>
+      <circle class="marca" cx="300" cy="55" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <rect x="250" y="215" width="26" height="60" fill="#fff" stroke="#aaa" stroke-width="3" rx="6"/>
+    <ellipse cx="300" cy="278" rx="40" ry="20" fill="#fff" stroke="#aaa" stroke-width="3"/>
+    <rect x="420" y="180" width="110" height="58" fill="#fff" stroke="#aaa" stroke-width="3" rx="8"/>
+    <path d="M462 180 v-14 h20 v8" fill="none" stroke="#888" stroke-width="5"/>
+    <g class="sf" data-s="suporte">
+      <rect x="425" y="108" width="100" height="8" fill="#9aa5ad"/>
+      <rect x="438" y="80" width="15" height="28" rx="4" fill="#5aa05a"/>
+      <rect x="462" y="86" width="13" height="22" rx="4" fill="#5a7ab0"/>
+      <rect x="486" y="82" width="15" height="26" rx="4" fill="#c05a5a"/>
+      <circle cx="472" cy="98" r="40" fill="transparent"/>
+      <circle class="marca" cx="472" cy="98" r="34" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="toalheiro">
+      <rect x="530" y="160" width="10" height="18" rx="4" fill="#6d787f"/>
+      <rect x="536" y="164" width="58" height="8" rx="4" fill="#9aa5ad"/>
+      <rect x="546" y="172" width="40" height="34" fill="#e8b0b0"/>
+      <circle cx="562" cy="180" r="38" fill="transparent"/>
+      <circle class="marca" cx="562" cy="180" r="32" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <rect x="620" y="40" width="170" height="330" fill="#d3ecf5" stroke="#9fc6d8" stroke-width="4" opacity=".85"/>
+    <path d="M635 62 h34 v16" fill="none" stroke="#888" stroke-width="6"/>
+    <g class="hz" data-r="boxsembarra">
+      <circle cx="705" cy="160" r="55" fill="transparent"/>
+      <circle class="marca" cx="705" cy="160" r="48" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="frascos">
+      <rect x="632" y="322" width="16" height="32" rx="5" fill="#5aa05a"/>
+      <rect x="653" y="330" width="14" height="24" rx="5" fill="#5a7ab0"/>
+      <ellipse cx="650" cy="358" rx="30" ry="7" fill="#b8d8e8" opacity=".7"/>
+      <circle cx="648" cy="340" r="42" fill="transparent"/>
+      <circle class="marca" cx="648" cy="340" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="banco">
+      <rect x="722" y="322" width="56" height="12" rx="4" fill="#f0f0f0" stroke="#b0b0b0" stroke-width="3"/>
+      <rect x="728" y="334" width="9" height="36" fill="#c0c0c0"/>
+      <rect x="762" y="334" width="9" height="36" fill="#c0c0c0"/>
+      <circle cx="750" cy="340" r="38" fill="transparent"/>
+      <circle class="marca" cx="750" cy="340" r="32" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="degrau">
+      <rect x="30" y="345" width="110" height="24" fill="#c4ccd2" stroke="#a8b8c0" stroke-width="3"/>
+      <rect x="30" y="369" width="110" height="36" fill="#b8c4ca"/>
+      <circle cx="85" cy="368" r="48" fill="transparent"/>
+      <circle class="marca" cx="85" cy="368" r="42" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="toalha">
+      <path d="M180 395 q 22 -16 44 0 q 22 16 44 2 l 5 20 q -26 12 -49 -2 q -23 -14 -40 0 Z" fill="#e8b0b0"/>
+      <circle cx="228" cy="406" r="42" fill="transparent"/>
+      <circle class="marca" cx="228" cy="406" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="tapete">
+      <rect x="330" y="376" width="120" height="32" rx="14" fill="#c98b4a"/>
+      <line x1="360" y1="376" x2="360" y2="408" stroke="#a86c30" stroke-width="5"/>
+      <line x1="400" y1="376" x2="400" y2="408" stroke="#a86c30" stroke-width="5"/>
+      <circle cx="390" cy="392" r="44" fill="transparent"/>
+      <circle class="marca" cx="390" cy="392" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="tapeteok">
+      <rect x="495" y="382" width="105" height="30" rx="12" fill="#3a6a8a"/>
+      <circle cx="515" cy="397" r="4" fill="#2a5a7a"/><circle cx="545" cy="397" r="4" fill="#2a5a7a"/><circle cx="575" cy="397" r="4" fill="#2a5a7a"/>
+      <circle cx="548" cy="397" r="42" fill="transparent"/>
+      <circle class="marca" cx="548" cy="397" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>`
+},
+{ id:"corredor", nome:"Corredor", icone:"🚪", dia:5,
+  intro:"O caminho de todas as noites. 5 perigos escondidos.",
+  riscos:{
+    passadeira:{licao:"🧶 Passadeira comprida e solta: um metro de tropeço em cada passo. Tirar, ou fixar com base antiderrapante."},
+    extensao:{licao:"🔌 Extensão elétrica serpenteando pelo chão.",
+      pergunta:{p:"Qual a melhor solução para a extensão?",
+        ops:["Instalar tomada nova onde precisa","Passar a extensão rente à parede","Cobrir o fio com fita no chão"], certa:0,
+        explica:"Tomada onde precisa: extensão permanente é gambiarra que derruba. Rente à parede ajuda, mas continua provisório."}},
+    vaso:{licao:"🪴 Vaso de planta no chão do trajeto: bonito de dia, invisível de noite. Vasos altos, ou fora do caminho."},
+    mesinha:{licao:"🪑 Móvel estreitando a passagem.",
+      pergunta:{p:"Qual a melhor solução para o móvel no corredor?",
+        ops:["Tirar do corredor: passagem é passagem","Encostar mais na parede","Marcar as quinas com fita colorida"], certa:0,
+        explica:"Corredor bom é corredor vazio — quem usa andador ou bengala precisa da largura inteira."}},
+    semapoio:{invisivel:true, licao:"🚶 O risco escondido: um corredor comprido SEM NENHUM ponto de apoio. Para equilíbrio frágil, cada passo é no vazio. Um corrimão simples de parede — como os de escada — transforma o trajeto."}
+  },
+  seguros:{
+    luzsensor:"✅ Luz de sensor no rodapé: acende sozinha quando alguém passa. O melhor amigo da madrugada.",
+    quadros:"✅ Quadros na parede: decoração no alto não atrapalha ninguém — o problema é o que fica no chão.",
+    capacho:"✅ Capacho fino de borracha, rente ao chão e fixo: limpa o pé sem virar obstáculo.",
+    interruptores:"✅ Interruptor também nesta ponta do corredor: com um em cada extremo, ninguém atravessa no escuro."
+  },
+  bonus:{p:"Verdadeiro ou falso: quem já caiu uma vez tem mais chance de cair de novo.", certaVF:true,
+    explica:"Verdadeiro — inclusive pelo medo, que muda o jeito de andar. Por isso prevenir a primeira queda vale tanto."},
+  svg:`
+    <rect x="0" y="0" width="800" height="300" fill="#f2ead8"/>
+    <rect x="0" y="300" width="800" height="150" fill="#d8bf9a"/>
+    <line x1="0" y1="300" x2="800" y2="300" stroke="#b89b6f" stroke-width="3"/>
+    <rect x="90" y="80" width="110" height="220" fill="#8a6d3b" rx="4"/>
+    <circle cx="185" cy="195" r="6" fill="#d8c890"/>
+    <rect x="540" y="80" width="110" height="220" fill="#8a6d3b" rx="4"/>
+    <circle cx="552" cy="195" r="6" fill="#d8c890"/>
+    <g class="sf" data-s="quadros">
+      <rect x="300" y="60" width="90" height="70" fill="#fff" stroke="#8a6d3b" stroke-width="5"/>
+      <path d="M310 115 L335 85 L355 105 L370 92 L380 115 Z" fill="#7fb069"/>
+      <circle cx="345" cy="95" r="44" fill="transparent"/>
+      <circle class="marca" cx="345" cy="95" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="interruptores">
+      <rect x="252" y="170" width="24" height="36" rx="4" fill="#fff" stroke="#aaa" stroke-width="3"/>
+      <rect x="259" y="180" width="10" height="14" fill="#ccc"/>
+      <circle cx="264" cy="188" r="36" fill="transparent"/>
+      <circle class="marca" cx="264" cy="188" r="30" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="semapoio">
+      <circle cx="462" cy="185" r="52" fill="transparent"/>
+      <circle class="marca" cx="462" cy="185" r="46" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="luzsensor">
+      <rect x="44" y="278" width="34" height="20" rx="6" fill="#fff" stroke="#aaa" stroke-width="3"/>
+      <path d="M50 274 l-8 -8 M72 274 l8 -8 M61 272 v-12" stroke="#f4c542" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="61" cy="285" r="36" fill="transparent"/>
+      <circle class="marca" cx="61" cy="285" r="30" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="capacho">
+      <rect x="110" y="330" width="70" height="18" rx="6" fill="#5a6a5a"/>
+      <circle cx="145" cy="339" r="36" fill="transparent"/>
+      <circle class="marca" cx="145" cy="339" r="30" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="extensao">
+      <path d="M205 402 C 235 392, 262 410, 298 400" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+      <rect x="192" y="394" width="22" height="14" rx="4" fill="#444"/>
+      <circle cx="250" cy="402" r="40" fill="transparent"/>
+      <circle class="marca" cx="250" cy="402" r="34" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="passadeira">
+      <rect x="300" y="362" width="220" height="38" rx="17" fill="#c0392b"/>
+      <rect x="320" y="370" width="180" height="22" rx="11" fill="#e74c3c"/>
+      <path d="M302 370 q -10 -10 4 -14" fill="none" stroke="#96281b" stroke-width="6"/>
+      <circle cx="410" cy="381" r="54" fill="transparent"/>
+      <circle class="marca" cx="410" cy="381" r="48" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="vaso">
+      <path d="M570 382 h48 l-8 38 h-32 Z" fill="#c96f4a"/>
+      <path d="M580 382 q -13 -28 9 -42 q 21 14 13 42" fill="#5a9a5a"/>
+      <circle cx="594" cy="392" r="44" fill="transparent"/>
+      <circle class="marca" cx="594" cy="392" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="mesinha">
+      <rect x="672" y="292" width="110" height="12" rx="4" fill="#b07d3f"/>
+      <rect x="682" y="304" width="10" height="76" fill="#8a6d3b"/>
+      <rect x="762" y="304" width="10" height="76" fill="#8a6d3b"/>
+      <rect x="700" y="262" width="48" height="30" rx="6" fill="#c96f4a"/>
+      <circle cx="727" cy="320" r="50" fill="transparent"/>
+      <circle class="marca" cx="727" cy="320" r="44" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>`
+},
+{ id:"servico", nome:"Área de Serviço", icone:"🧺", dia:6,
+  intro:"Lavar e estender roupa tem seus perigos. 5 escondidos aqui.",
+  riscos:{
+    espuma:{licao:"🫧 Chão molhado com sabão perto do tanque.",
+      pergunta:{p:"Qual a melhor atitude com o chão ensaboado?",
+        ops:["Secar na hora e usar calçado antiderrapante","Jogar mais água para diluir o sabão","Andar descalço para sentir melhor o chão"], certa:0,
+        explica:"Secar na hora, sempre — e calçado com sola de borracha. Descalço em sabão é queda com hora marcada."}},
+    balde:{licao:"🪣 Balde cheio no meio do caminho: obstáculo baixo, pesado e molhado. Encostado na parede, sempre."},
+    banquinho:{licao:"🪜 Banquinho para alcançar o varal alto.",
+      pergunta:{p:"Qual a melhor solução para o varal alto?",
+        ops:["Varal de teto com manivela, que desce até você","Pendurar menos roupa de cada vez","Deixar o banquinho sempre no mesmo lugar"], certa:0,
+        explica:"Varal com manivela: a roupa desce até as suas mãos, e o banquinho aposenta de vez."}},
+    cesto:{licao:"🧺 Cesto de roupa no caminho: carregar cesto já esconde o chão da vista — o trajeto precisa estar livre."},
+    produtos:{invisivel:true, licao:"🧴 O risco escondido: os produtos de limpeza pesados guardados na prateleira ALTA. Esticar o corpo com peso na mão desequilibra. Da cintura para cima só o que é leve e pouco usado."}
+  },
+  seguros:{
+    tanque:"✅ Tanque firme, bem chumbado na parede: dá para apoiar a mão com segurança ao lavar.",
+    maquina:"✅ Máquina de lavar no lugar, mangueiras presas atrás: nada solto pelo chão.",
+    rodo:"✅ Rodo e vassoura pendurados no suporte: ferramenta pendurada é chão livre.",
+    sabao:"✅ Sabão em pó na prateleira BAIXA, na altura das mãos: o peso do dia a dia mora aqui embaixo.",
+    janela:"✅ Janela aberta ventilando: chão lavado seca muito mais rápido."
+  },
+  bonus:{p:"Verdadeiro ou falso: carregar peso com as duas mãos ocupadas aumenta o risco de queda.", certaVF:true,
+    explica:"Verdadeiro! Sem uma mão livre para se apoiar, qualquer tropeço vira tombo. Cargas menores, mais viagens."},
+  svg:`
+    <rect x="0" y="0" width="800" height="300" fill="#e4ece0"/>
+    <rect x="0" y="300" width="800" height="150" fill="#c8c2b0"/>
+    <line x1="0" y1="300" x2="800" y2="300" stroke="#a09a88" stroke-width="3"/>
+    <g class="sf" data-s="janela">
+      <rect x="40" y="50" width="130" height="95" fill="#bfe0f5" stroke="#8a8a70" stroke-width="6"/>
+      <line x1="105" y1="50" x2="105" y2="145" stroke="#8a8a70" stroke-width="5"/>
+      <path d="M115 70 q 14 8 0 18 M135 70 q 14 8 0 18" fill="none" stroke="#fff" stroke-width="4"/>
+      <circle cx="105" cy="98" r="44" fill="transparent"/>
+      <circle class="marca" cx="105" cy="98" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="tanque">
+      <rect x="50" y="200" width="150" height="56" fill="#d8d8d8" stroke="#b0b0b0" stroke-width="3" rx="6"/>
+      <rect x="60" y="256" width="130" height="90" fill="#c0c0c0"/>
+      <path d="M110 200 v-24 h24 v10" fill="none" stroke="#888" stroke-width="5"/>
+      <circle cx="125" cy="235" r="48" fill="transparent"/>
+      <circle class="marca" cx="125" cy="235" r="42" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="sabao">
+      <rect x="228" y="176" width="110" height="9" fill="#8a6d3b"/>
+      <rect x="244" y="142" width="30" height="34" rx="4" fill="#5a9ad0"/>
+      <rect x="284" y="150" width="26" height="26" rx="4" fill="#d0a05a"/>
+      <circle cx="280" cy="160" r="42" fill="transparent"/>
+      <circle class="marca" cx="280" cy="160" r="36" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="maquina">
+      <rect x="360" y="230" width="110" height="126" rx="8" fill="#e9e9e9" stroke="#c0c0c0" stroke-width="3"/>
+      <circle cx="415" cy="290" r="34" fill="#b8d8e8" stroke="#a0a0a0" stroke-width="4"/>
+      <circle cx="415" cy="255" r="46" fill="transparent"/>
+      <circle class="marca" cx="415" cy="255" r="40" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <line x1="480" y1="120" x2="790" y2="120" stroke="#555" stroke-width="4"/>
+    <rect x="500" y="120" width="42" height="58" fill="#5a9ad0"/>
+    <rect x="562" y="120" width="42" height="66" fill="#e8b0b0"/>
+    <g class="sf" data-s="rodo">
+      <rect x="452" y="52" width="34" height="9" fill="#8a6d3b"/>
+      <line x1="461" y1="61" x2="461" y2="180" stroke="#b07d3f" stroke-width="6"/>
+      <rect x="447" y="180" width="28" height="9" rx="4" fill="#444"/>
+      <circle cx="463" cy="120" r="40" fill="transparent"/>
+      <circle class="marca" cx="463" cy="120" r="34" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="produtos">
+      <rect x="650" y="52" width="130" height="9" fill="#8a6d3b"/>
+      <rect x="662" y="18" width="18" height="34" rx="4" fill="#5aa05a"/>
+      <rect x="688" y="24" width="16" height="28" rx="4" fill="#c05a5a"/>
+      <rect x="712" y="20" width="18" height="32" rx="4" fill="#5a7ab0"/>
+      <circle cx="700" cy="42" r="48" fill="transparent"/>
+      <circle class="marca" cx="700" cy="42" r="42" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="espuma">
+      <ellipse cx="130" cy="398" rx="50" ry="14" fill="#cfe8f5" opacity=".9"/>
+      <circle cx="108" cy="389" r="7" fill="#fff"/><circle cx="132" cy="393" r="9" fill="#fff"/><circle cx="155" cy="388" r="6" fill="#fff"/>
+      <circle cx="130" cy="395" r="48" fill="transparent"/>
+      <circle class="marca" cx="130" cy="395" r="42" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="balde">
+      <path d="M275 372 h52 l-8 44 h-36 Z" fill="#5a7ab0"/>
+      <ellipse cx="301" cy="372" rx="26" ry="7" fill="#7a9ad0"/>
+      <path d="M278 370 q 23 -24 46 0" fill="none" stroke="#444" stroke-width="4"/>
+      <circle cx="301" cy="390" r="44" fill="transparent"/>
+      <circle class="marca" cx="301" cy="390" r="38" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="banquinho">
+      <rect x="530" y="330" width="80" height="14" rx="4" fill="#b07d3f"/>
+      <rect x="537" y="344" width="12" height="52" fill="#8a6d3b"/>
+      <rect x="591" y="344" width="12" height="52" fill="#8a6d3b"/>
+      <circle cx="570" cy="355" r="48" fill="transparent"/>
+      <circle class="marca" cx="570" cy="355" r="42" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="cesto">
+      <path d="M672 372 h86 l-10 44 h-66 Z" fill="#c9a86a"/>
+      <line x1="680" y1="380" x2="750" y2="380" stroke="#a8874a" stroke-width="4"/>
+      <path d="M684 370 q 10 -14 22 -6 M712 368 q 12 -12 24 -2" fill="none" stroke="#e8b0b0" stroke-width="6"/>
+      <circle cx="715" cy="390" r="46" fill="transparent"/>
+      <circle class="marca" cx="715" cy="390" r="40" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+    </g>`
+},
+{ id:"jardim", nome:"Jardim / Área Externa", icone:"🌳", dia:7,
+  intro:"O grande final: do portão à porta de casa. 5 perigos escondidos.",
+  riscos:{
+    mangueira:{licao:"🚿 Mangueira atravessada no caminho: enrole depois de usar — o suporte de parede está ali, vazio!"},
+    limo:{licao:"🟢 Limo verde na calçada.",
+      pergunta:{p:"Qual a melhor solução para o limo?",
+        ops:["Lavar com água sanitária e manter o piso áspero","Andar pela grama quando chove","Esperar o sol secar"], certa:0,
+        explica:"Limo se remove — água sanitária ou lavadora de pressão. Com sereno ou chuva, ele vira sabão debaixo do pé."}},
+    lajota:{licao:"🧱 Lajota solta e desnivelada.",
+      pergunta:{p:"Qual a melhor solução para a lajota solta?",
+        ops:["Assentar de novo o quanto antes","Pintar de cor viva para avisar","Todo mundo já sabe onde ela está"], certa:0,
+        explica:"Consertar logo: é a queda mais comum da área externa. 'Todo mundo sabe' — até o dia da pressa ou da visita."}},
+    luz:{licao:"💡 Luminária externa queimada: chegar em casa de noite, no escuro, é risco na certa. Lâmpada com sensor de presença resolve sozinha."},
+    escada:{invisivel:true, licao:"🪜 O risco escondido: os degraus da entrada NÃO têm corrimão! Dois degraus bastam para uma fratura de fêmur. Corrimão dos dois lados é a obra mais importante da área externa."}
+  },
+  seguros:{
+    suporte:"✅ O suporte de mangueira na parede: o lugar certo dela — que hoje fugiu para o caminho...",
+    banco:"✅ Banco de jardim firme: ponto de descanso no trajeto é ótimo para quem cansa ou sente tontura.",
+    vaso:"✅ Vaso alto sobre pedestal, junto ao muro: as plantas enfeitam sem entrar no caminho.",
+    piso:"✅ Este trecho da calçada está firme, nivelado e áspero: é assim que todo o caminho deveria ser."
+  },
+  bonus:{p:"Verdadeiro ou falso: exercícios de força e equilíbrio são a prevenção mais eficaz contra quedas.", certaVF:true,
+    explica:"Verdadeiro! Pernas fortes e equilíbrio treinado seguram o corpo onde a casa não alcança. Casa segura + corpo forte = a dupla completa."},
+  svg:`
+    <rect x="0" y="0" width="800" height="300" fill="#cfe8f5"/>
+    <rect x="0" y="300" width="800" height="150" fill="#8fbf6f"/>
+    <circle cx="700" cy="60" r="30" fill="#f7e77a"/>
+    <rect x="0" y="60" width="180" height="240" fill="#f0e0c0" stroke="#c8b090" stroke-width="4"/>
+    <rect x="40" y="160" width="70" height="140" fill="#8a6d3b"/>
+    <path d="M-10 60 L90 6 L190 60 Z" fill="#c05a3a"/>
+    <g class="sf" data-s="suporte">
+      <path d="M138 120 a 16 16 0 1 1 0 30" fill="none" stroke="#666" stroke-width="7"/>
+      <circle cx="145" cy="135" r="34" fill="transparent"/>
+      <circle class="marca" cx="145" cy="135" r="28" fill="none" stroke="#1b5e20" stroke-width="6" opacity="0"/>
+    </g>
+    <path d="M180 320 L800 320 L800 372 L180 372 Z" fill="#d8cfc0"/>
+    <line x1="290" y1="320" x2="290" y2="372" stroke="#b8a890" stroke-width="3"/>
+    <line x1="400" y1="320" x2="400" y2="372" stroke="#b8a890" stroke-width="3"/>
+    <line x1="510" y1="320" x2="510" y2="372" stroke="#b8a890" stroke-width="3"/>
+    <line x1="620" y1="320" x2="620" y2="372" stroke="#b8a890" stroke-width="3"/>
+    <circle cx="600" cy="230" r="44" fill="#5a9a5a"/>
+    <circle cx="572" cy="206" r="32" fill="#6aaa6a"/>
+    <rect x="592" y="258" width="16" height="62" fill="#8a6d3b"/>
+    <g class="hz" data-r="escada">
+      <rect x="110" y="300" width="80" height="20" fill="#c8b090"/>
+      <rect x="120" y="320" width="70" height="20" fill="#b8a080"/>
+      <circle cx="152" cy="322" r="48" fill="transparent"/>
+      <circle class="marca" cx="152" cy="322" r="42" fill="none" stroke="#1b5e20" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="piso">
+      <circle cx="252" cy="350" r="30" fill="transparent"/>
+      <circle class="marca" cx="252" cy="350" r="24" fill="none" stroke="#1b5e20" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="limo">
+      <ellipse cx="325" cy="342" rx="36" ry="12" fill="#4a7a3a" opacity=".85"/>
+      <ellipse cx="347" cy="349" rx="16" ry="6" fill="#3a6a2a" opacity=".85"/>
+      <circle cx="330" cy="342" r="38" fill="transparent"/>
+      <circle class="marca" cx="330" cy="342" r="32" fill="none" stroke="#1b5e20" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="lajota">
+      <path d="M530 330 L590 326 L596 352 L534 358 Z" fill="#c0b0a0" stroke="#988870" stroke-width="3" transform="rotate(-4 560 342)"/>
+      <circle cx="562" cy="342" r="42" fill="transparent"/>
+      <circle class="marca" cx="562" cy="342" r="36" fill="none" stroke="#1b5e20" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="mangueira">
+      <path d="M290 412 C 330 386, 372 432, 420 404 C 458 380, 488 416, 508 408" fill="none" stroke="#3a8a3a" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="400" cy="406" r="44" fill="transparent"/>
+      <circle class="marca" cx="400" cy="406" r="38" fill="none" stroke="#1b5e20" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="banco">
+      <rect x="672" y="382" width="100" height="12" rx="4" fill="#b07d3f"/>
+      <rect x="672" y="352" width="100" height="12" rx="4" fill="#b07d3f"/>
+      <rect x="680" y="394" width="10" height="34" fill="#8a6d3b"/>
+      <rect x="754" y="394" width="10" height="34" fill="#8a6d3b"/>
+      <circle cx="722" cy="392" r="44" fill="transparent"/>
+      <circle class="marca" cx="722" cy="392" r="38" fill="none" stroke="#1b5e20" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="sf" data-s="vaso">
+      <rect x="42" y="388" width="14" height="40" fill="#988870"/>
+      <path d="M28 358 h42 l-7 32 h-28 Z" fill="#c96f4a"/>
+      <path d="M36 358 q -12 -26 8 -38 q 19 12 12 38" fill="#5a9a5a"/>
+      <circle cx="49" cy="380" r="40" fill="transparent"/>
+      <circle class="marca" cx="49" cy="380" r="34" fill="none" stroke="#1b5e20" stroke-width="6" opacity="0"/>
+    </g>
+    <g class="hz" data-r="luz">
+      <rect x="740" y="150" width="10" height="170" fill="#555"/>
+      <path d="M725 150 h40 l-10 -24 h-20 Z" fill="#7a7a6a"/>
+      <circle cx="745" cy="140" r="9" fill="#d8d4c0"/>
+      <text x="695" y="118" font-size="22" fill="#6a6a5a" font-family="Segoe UI, Arial">zzt...</text>
+      <circle cx="745" cy="138" r="44" fill="transparent"/>
+      <circle class="marca" cx="745" cy="138" r="38" fill="none" stroke="#1b5e20" stroke-width="6" opacity="0"/>
+    </g>`
+}
+];
+
+const TOTAL_RISCOS = COMODOS.reduce((s, c) => s + Object.keys(c.riscos).length, 0);
+
+/* =====================================================================
+   ESTADO (persistido no aparelho) — uma ronda por ambiente, resultado final
+===================================================================== */
+const CHAVE = "casaSegura_jogo_v2";
+let estado = null;
+try{ estado = JSON.parse(localStorage.getItem(CHAVE)); }catch(e){}
+if(!estado) estado = { apelido:"", comodos:{}, ideias:[] };
+function salvar(){ try{ localStorage.setItem(CHAVE, JSON.stringify(estado)); }catch(e){} }
+
+function resultadoDe(id){ return estado.comodos[id] || null; }
+function totalAchados(){ return COMODOS.reduce((s, c) => { const r = resultadoDe(c.id); return s + (r ? r.achados.length : 0); }, 0); }
+function rondasFeitas(){ return COMODOS.filter(c => resultadoDe(c.id)).length; }
+function pontosTotais(){ return COMODOS.reduce((s, c) => { const r = resultadoDe(c.id); return s + (r ? r.pontos : 0); }, 0); }
+
+/* ---------- calendário ---------- */
+function diaAtual(){
+  if(CONFIG.MODO_TESTE) return 7;
+  const inicio = new Date(CONFIG.DATA_INICIO + "T00:00:00");
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+  const dif = Math.floor((hoje - inicio) / 86400000) + 1;
+  return Math.max(0, Math.min(7, dif));
+}
+
+/* ---------- navegação ---------- */
+function mostrarTela(id){
+  document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
+  document.getElementById(id).classList.add("ativa");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function voltarMapa(){
+  if(ronda && !ronda.encerrada){
+    if(!confirm("Sair agora encerra sua ronda única neste ambiente. Sair mesmo assim?")) return;
+    encerrarRonda("abandono", true);
+    return;
+  }
+  pararTimer();
+  montarMapa();
+  mostrarTela("tela-mapa");
+}
+
+/* =====================================================================
+   INÍCIO
+===================================================================== */
+function entrar(){
+  const ap = document.getElementById("inp-apelido").value.trim();
+  if(!ap){
+    document.getElementById("inicio-aviso").textContent = "⚠️ Escolha um apelido para entrar.";
+    return;
+  }
+  estado.apelido = ap;
+  salvar();
+  montarMapa();
+  mostrarTela("tela-mapa");
+}
+if(estado.apelido) document.getElementById("inp-apelido").value = estado.apelido;
+
+/* =====================================================================
+   MAPA
+===================================================================== */
+function montarMapa(){
+  const dia = diaAtual();
+  document.getElementById("mapa-ola").textContent = "🏠 A casa — olá, " + (estado.apelido || "visitante") + "!";
+  document.getElementById("mapa-dia").textContent = dia === 0 ? "—" : dia + " de 7";
+  document.getElementById("mapa-pontos").textContent = pontosTotais();
+  document.getElementById("mapa-achados").textContent = totalAchados() + "/" + TOTAL_RISCOS;
+  const msg = document.getElementById("mapa-msg-dia");
+  if(CONFIG.MODO_TESTE){
+    msg.textContent = "Modo de revisão: todos os ambientes abertos e rondas podem ser refeitas.";
+  }else if(dia === 0){
+    msg.textContent = "A rodada começa em " + new Date(CONFIG.DATA_INICIO + "T00:00:00").toLocaleDateString("pt-BR") + ". Volte no dia 1!";
+  }else if(dia < 7){
+    const proximo = COMODOS.find(c => c.dia === dia + 1);
+    msg.textContent = "Amanhã abre: " + proximo.icone + " " + proximo.nome + ". Rondas atrasadas continuam disponíveis (uma vez cada).";
+  }else{
+    msg.textContent = "Último dia da rodada — a casa inteira está aberta!";
+  }
+
+  const grade = document.getElementById("mapa-cards");
+  grade.innerHTML = "";
+  COMODOS.forEach(c => {
+    const aberto = c.dia <= dia;
+    const res = resultadoDe(c.id);
+    const b = document.createElement("button");
+    b.className = "card-comodo" + (aberto ? (res ? " completo" : "") : " bloqueado");
+    let estadoTxt;
+    if(!aberto) estadoTxt = "🔒 abre no dia " + c.dia;
+    else if(res) estadoTxt = "✅ Ronda feita: " + res.pontos + " pts (" + res.achados.length + "/5 perigos) — toque para rever";
+    else estadoTxt = "🔍 Ronda disponível — uma única chance!";
+    b.innerHTML =
+      "<span class='icone'>" + (aberto ? c.icone : "🔒") + "</span>" +
+      "<span class='info'><span class='nome'>Dia " + c.dia + " · " + c.nome + "</span><br>" +
+      "<span class='estado'>" + estadoTxt + "</span></span>";
+    if(aberto) b.onclick = () => abrirComodo(c.id);
+    grade.appendChild(b);
+  });
+}
+
+/* =====================================================================
+   ABERTURA DE AMBIENTE: pré-ronda, ronda única ou revisão
+===================================================================== */
+let comodoAtivo = null;
+let ronda = null;
+let modoRevisao = false;
+
+function abrirComodo(id){
+  const c = COMODOS.find(x => x.id === id);
+  if(!c || c.dia > diaAtual()) return;
+  comodoAtivo = c;
+  if(resultadoDe(id)){
+    abrirRevisao(c);
+  }else{
+    document.getElementById("pr-etiqueta").textContent = "Dia " + c.dia + " de 7";
+    document.getElementById("pr-titulo").textContent = c.icone + " " + c.nome;
+    document.getElementById("pr-intro").textContent = c.intro;
+    mostrarTela("tela-preronda");
+  }
+}
+
+/* ---------- montagem da cena ---------- */
+function montarCena(c){
+  const palco = document.getElementById("jg-palco");
+  palco.innerHTML = '<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">' + c.svg + "</svg>";
+  const svg = palco.querySelector("svg");
+  svg.addEventListener("click", () => {
+    if(modoRevisao || !ronda || ronda.encerrada || ronda.pend) return;
+    msgLivre("Nada de especial aqui — toque livre, nenhuma ficha gasta. Continue procurando! 👀");
+  });
+  svg.querySelectorAll(".hz").forEach(g => {
+    g.addEventListener("click", ev => { ev.stopPropagation(); tocarObjeto(g, "r", g.dataset.r); });
+  });
+  svg.querySelectorAll(".sf").forEach(g => {
+    g.addEventListener("click", ev => { ev.stopPropagation(); tocarObjeto(g, "s", g.dataset.s); });
+  });
+  return svg;
+}
+
+function marcar(svg, tipo, oid, cor){
+  const sel = tipo === "r" ? ".hz[data-r='" + oid + "']" : ".sf[data-s='" + oid + "']";
+  const m = svg.querySelector(sel + " .marca");
+  if(m){
+    m.setAttribute("opacity", "1");
+    if(cor) m.setAttribute("stroke", cor);
+    if(cor === "#e67e22") m.setAttribute("stroke-dasharray", "10 8");
+  }
+}
+
+/* =====================================================================
+   A RONDA
+===================================================================== */
+function iniciarRonda(){
+  if(!toqueValido()) return;
+  const c = comodoAtivo;
+  modoRevisao = false;
+  ronda = { c, fichas: FICHAS_POR_AMBIENTE, tempo: TEMPO_RONDA, achados: [], gastos: [],
+            pontos: 0, acertosSolucao: 0, bonusVF: 0, pend: null, encerrada: false, timer: null };
+  document.getElementById("jg-etiqueta").textContent = "Dia " + c.dia + " de 7 · ronda única";
+  document.getElementById("jg-titulo").textContent = c.icone + " " + c.nome;
+  document.getElementById("jg-btn-voltar").style.display = "none";
+  document.getElementById("jg-btn-encerrar").style.display = "inline-block";
+  montarCena(c);
+  msgLivre("A ronda começou! Toque no que é perigo de verdade — cada toque em objeto gasta 1 ficha. 👆");
+  atualizarTopo();
+  ronda.timer = setInterval(tic, 1000);
+  mostrarTela("tela-jogo");
+}
+
+function pararTimer(){
+  if(ronda && ronda.timer){ clearInterval(ronda.timer); ronda.timer = null; }
+}
+
+function tic(){
+  if(!ronda || ronda.encerrada || ronda.pend) return; // pausado durante leituras
+  ronda.tempo--;
+  atualizarTopo();
+  if(ronda.tempo <= 0) encerrarRonda("tempo");
+}
+
+function atualizarTopo(){
+  if(!ronda) return;
+  document.getElementById("jg-fichas").textContent = ronda.fichas;
+  const elTempo = document.getElementById("jg-tempo");
+  elTempo.textContent = Math.max(0, ronda.tempo);
+  elTempo.className = "valor" + (ronda.tempo <= 15 ? " alerta" : "");
+  const pct = Math.max(0, ronda.tempo / TEMPO_RONDA * 100);
+  const barra = document.getElementById("jg-barra");
+  barra.style.width = pct + "%";
+  barra.className = "barra-cheia" + (pct < 25 ? " fim" : pct < 55 ? " meio" : "");
+  document.getElementById("jg-achados").textContent =
+    ronda.achados.length + "/" + Object.keys(ronda.c.riscos).length;
+}
+
+function msgLivre(html){
+  document.getElementById("jg-painel").innerHTML = html;
+}
+
+/* painel bloqueante: pausa o tempo até o jogador tocar em Continuar */
+function abrirPainel(html, rotuloBtn, aoFechar){
+  ronda.pend = "painel";
+  const painel = document.getElementById("jg-painel");
+  painel.innerHTML = html;
+  const b = document.createElement("button");
+  b.className = "btn-grande";
+  b.textContent = rotuloBtn || "Continuar a ronda ➜";
+  b.onclick = () => { if(!toqueValido()) return; ronda.pend = null; aoFechar(); };
+  painel.appendChild(b);
+  painel.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function tocarObjeto(g, tipo, oid){
+  if(modoRevisao){ // revisão: mostra lições livremente
+    const c = comodoAtivo;
+    msgLivre(tipo === "r" ? ("⚠️ " + c.riscos[oid].licao) : c.seguros[oid]);
+    return;
+  }
+  if(!ronda || ronda.encerrada || ronda.pend) return;
+  const chave = tipo + ":" + oid;
+  if(ronda.gastos.includes(chave)){
+    msgLivre("Você já inspecionou isso. 😉 Nenhuma ficha gasta.");
+    return;
+  }
+  ronda.gastos.push(chave);
+  ronda.fichas--;
+  const svg = document.getElementById("jg-palco").querySelector("svg");
+
+  if(tipo === "r"){
+    const r = ronda.c.riscos[oid];
+    ronda.achados.push(oid);
+    const pts = r.invisivel ? PONTOS_INVISIVEL : PONTOS_RISCO;
+    ronda.pontos += pts;
+    marcar(svg, "r", oid, "#2e7d32");
+    atualizarTopo();
+    if(r.pergunta){
+      abrirPergunta(r, pts);
+    }else{
+      abrirPainel("<strong>+" + pts + " pontos!" + (r.invisivel ? " 🕵️ Você achou o risco escondido!" : "") +
+        "</strong><br>" + r.licao, null, verificarFim);
+    }
+  }else{
+    const s = ronda.c.seguros[oid];
+    atualizarTopo();
+    abrirPainel("<strong>Este está seguro — a ficha foi gasta, mas a lição fica:</strong><br>" + s, null, verificarFim);
+  }
+}
+
+function abrirPergunta(r, ptsBase){
+  ronda.pend = "pergunta";
+  const painel = document.getElementById("jg-painel");
+  painel.innerHTML = "<strong>+" + ptsBase + " pontos!</strong> " + r.licao +
+    "<br><br><strong>🧠 Valendo +5: " + r.pergunta.p + "</strong>";
+  r.pergunta.ops.forEach((op, i) => {
+    const b = document.createElement("button");
+    b.className = "btn-opcao";
+    b.textContent = op;
+    b.onclick = () => {
+      if(!toqueValido()) return;
+      painel.querySelectorAll(".btn-opcao").forEach(x => x.disabled = true);
+      const certa = i === r.pergunta.certa;
+      b.classList.add(certa ? "certa" : "errada");
+      if(certa){ ronda.acertosSolucao++; ronda.pontos += PONTOS_SOLUCAO; }
+      const fb = document.createElement("div");
+      fb.style.marginTop = "10px";
+      fb.innerHTML = (certa ? "✅ <strong>Certo! +5 pontos.</strong> " : "❌ <strong>A melhor era: “" +
+        r.pergunta.ops[r.pergunta.certa] + "”.</strong> ") + r.pergunta.explica;
+      painel.appendChild(fb);
+      const bc = document.createElement("button");
+      bc.className = "btn-grande";
+      bc.textContent = "Continuar a ronda ➜";
+      bc.onclick = () => { if(!toqueValido()) return; ronda.pend = null; verificarFim(); };
+      painel.appendChild(bc);
+      atualizarTopo();
+    };
+    painel.appendChild(b);
+  });
+  painel.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function verificarFim(){
+  const tot = Object.keys(ronda.c.riscos).length;
+  if(ronda.achados.length === tot){ encerrarRonda("completo"); return; }
+  if(ronda.fichas <= 0){ encerrarRonda("fichas"); return; }
+  msgLivre("Continue! Faltam " + (tot - ronda.achados.length) + " perigo(s), você tem " +
+    ronda.fichas + " ficha(s) e " + ronda.tempo + "s. 👀");
+}
+
+function desistirRonda(){
+  if(!ronda || ronda.encerrada){ voltarMapa(); return; }
+  if(confirm("Encerrar a ronda agora? Os perigos não achados ficam sem pontos (a ronda é única).")){
+    encerrarRonda("desistiu");
+  }
+}
+
+/* ---------- encerramento: bônus, pergunta do dia e resultado ---------- */
+function encerrarRonda(motivo, silencioso){
+  if(!ronda || ronda.encerrada) return;
+  ronda.encerrada = true;
+  ronda.pend = null;
+  pararTimer();
+  const bonusFichas = motivo === "completo" ? ronda.fichas * PONTOS_FICHA : 0;
+  ronda.pontos += bonusFichas;
+  document.getElementById("jg-btn-encerrar").style.display = "none";
+  if(silencioso){ finalizarResultado(motivo, bonusFichas, false); pararTimer(); montarMapa(); mostrarTela("tela-mapa"); return; }
+  perguntaBonus(motivo, bonusFichas);
+}
+
+function perguntaBonus(motivo, bonusFichas){
+  const bn = ronda.c.bonus;
+  const painel = document.getElementById("jg-painel");
+  const cab = motivo === "completo" ? "🎉 <strong>Ambiente completo!</strong> +" + bonusFichas + " de bônus pelas " + ronda.fichas + " fichas economizadas."
+    : motivo === "tempo" ? "⏱️ <strong>O tempo da ronda acabou.</strong>"
+    : motivo === "fichas" ? "🎟️ <strong>As fichas acabaram.</strong>"
+    : "🚪 <strong>Ronda encerrada.</strong>";
+  painel.innerHTML = cab + "<br><br><strong>⭐ Pergunta bônus do dia (+5): " + bn.p + "</strong>";
+  [["✔️ Verdadeiro", true], ["✖️ Falso", false]].forEach(([rot, val]) => {
+    const b = document.createElement("button");
+    b.className = "btn-opcao";
+    b.textContent = rot;
+    b.onclick = () => {
+      if(!toqueValido()) return;
+      painel.querySelectorAll(".btn-opcao").forEach(x => x.disabled = true);
+      const certa = val === bn.certaVF;
+      b.classList.add(certa ? "certa" : "errada");
+      if(certa){ ronda.bonusVF = PONTOS_BONUS_VF; ronda.pontos += PONTOS_BONUS_VF; }
+      const fb = document.createElement("div");
+      fb.style.marginTop = "10px";
+      fb.innerHTML = (certa ? "✅ <strong>+5 pontos!</strong> " : "❌ ") + bn.explica;
+      painel.appendChild(fb);
+      const bc = document.createElement("button");
+      bc.className = "btn-grande";
+      bc.textContent = "Ver meu resultado 🏁";
+      bc.onclick = () => { if(!toqueValido()) return; finalizarResultado(motivo, bonusFichas, true); };
+      painel.appendChild(bc);
+    };
+    painel.appendChild(b);
+  });
+  painel.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function finalizarResultado(motivo, bonusFichas, mostrar){
+  const c = ronda.c;
+  const nInv = ronda.achados.filter(id => c.riscos[id].invisivel).length;
+  const nVis = ronda.achados.length - nInv;
+  estado.comodos[c.id] = {
+    pontos: ronda.pontos, achados: ronda.achados.slice(),
+    acertosSolucao: ronda.acertosSolucao, bonusVF: ronda.bonusVF,
+    fichasRestantes: ronda.fichas, motivo
+  };
+  salvar();
+  enviarPlanilha({ tipo:"pontuacao", apelido: estado.apelido, comodo: c.nome,
+    pontosAmbiente: ronda.pontos, pontosTotal: pontosTotais(), achados: totalAchados() });
+
+  if(!mostrar) return;
+  const perdidos = Object.keys(c.riscos).filter(id => !ronda.achados.includes(id));
+  const svg = document.getElementById("jg-palco").querySelector("svg");
+  perdidos.forEach(id => marcar(svg, "r", id, "#e67e22")); // revela o que passou batido
+  const painel = document.getElementById("jg-painel");
+  painel.innerHTML =
+    "<strong>🏁 Resultado — " + c.icone + " " + c.nome + "</strong>" +
+    "<div class='resumo-final'>" +
+    "<div>⚠️ Perigos visíveis: " + nVis + " × 10 = <strong>" + nVis * PONTOS_RISCO + "</strong></div>" +
+    "<div>🕵️ Risco escondido: " + (nInv ? "achou! <strong>+20</strong>" : "não achou (<strong>0</strong>)") + "</div>" +
+    "<div>🧠 Soluções certas: " + ronda.acertosSolucao + " × 5 = <strong>" + ronda.acertosSolucao * PONTOS_SOLUCAO + "</strong></div>" +
+    "<div>⭐ Pergunta bônus: <strong>" + (ronda.bonusVF ? "+5" : "0") + "</strong></div>" +
+    "<div>🎯 Fichas economizadas: <strong>" + (bonusFichas ? "+" + bonusFichas : "0") + "</strong></div>" +
+    "<div style='font-size:1.15rem;margin-top:8px'>Total do ambiente: <strong>" + ronda.pontos + " pontos</strong> · Geral: <strong>" + pontosTotais() + "</strong></div>" +
+    "</div>" +
+    (perdidos.length ? "🟠 Os círculos laranja mostram o que passou batido — toque neles para aprender (agora de graça)." :
+      "👏 Você encontrou tudo!") +
+    "<br><br>💡 Lembrou de um perigo que o jogo não tem? Toque em “Tenho uma ideia” na tela da casa — vale pontos da banca amanhã!";
+  modoRevisao = true; // toques agora só ensinam
+  document.getElementById("jg-btn-voltar").style.display = "block";
+}
+
+/* ---------- revisão de ambiente já feito ---------- */
+function abrirRevisao(c){
+  modoRevisao = true;
+  ronda = null;
+  pararTimer();
+  const res = resultadoDe(c.id);
+  document.getElementById("jg-etiqueta").textContent = "Dia " + c.dia + " · revisão (ronda já feita)";
+  document.getElementById("jg-titulo").textContent = c.icone + " " + c.nome;
+  document.getElementById("jg-fichas").textContent = "—";
+  document.getElementById("jg-tempo").textContent = "—";
+  document.getElementById("jg-tempo").className = "valor";
+  document.getElementById("jg-barra").style.width = "0%";
+  document.getElementById("jg-achados").textContent = res.achados.length + "/" + Object.keys(c.riscos).length;
+  const svg = montarCena(c);
+  Object.keys(c.riscos).forEach(id =>
+    marcar(svg, "r", id, res.achados.includes(id) ? "#2e7d32" : "#e67e22"));
+  let html = "Sua ronda aqui rendeu <strong>" + res.pontos + " pontos</strong>. " +
+    "Verde = você achou; laranja = passou batido. Toque em qualquer coisa para rever a lição — agora de graça.";
+  if(CONFIG.MODO_TESTE){
+    html += "<br><br><button class='btn-grande btn-laranja' onclick='refazerTeste()'>🔄 Refazer a ronda (modo teste)</button>";
+  }
+  msgLivre(html);
+  document.getElementById("jg-btn-voltar").style.display = "block";
+  document.getElementById("jg-btn-encerrar").style.display = "none";
+  mostrarTela("tela-jogo");
+}
+
+function refazerTeste(){
+  if(!CONFIG.MODO_TESTE) return;
+  delete estado.comodos[comodoAtivo.id];
+  salvar();
+  abrirComodo(comodoAtivo.id);
+}
+
+/* =====================================================================
+   IDEIAS (Banca da IA) — até 3 por dia
+===================================================================== */
+const LIMITE_IDEIAS_DIA = 3;
+function hojeStr(){ return new Date().toLocaleDateString("pt-BR"); }
+function ideiasHoje(){ return estado.ideias.filter(i => i.data === hojeStr()).length; }
+
+(function preencherComodosIdeia(){
+  const sel = document.getElementById("id-comodo");
+  sel.innerHTML = "<option value='Casa em geral'>🏠 Casa em geral</option>" +
+    COMODOS.map(c => "<option value='" + c.nome + "'>" + c.icone + " " + c.nome + "</option>").join("");
+})();
+
+function enviarIdeia(){
+  if(!toqueValido()) return;
+  const aviso = document.getElementById("ideia-aviso");
+  const texto = document.getElementById("id-texto").value.trim();
+  if(texto.length < 10){
+    aviso.textContent = "⚠️ Conte um pouco mais da sua ideia (pelo menos uma frase).";
+    return;
+  }
+  if(ideiasHoje() >= LIMITE_IDEIAS_DIA){
+    aviso.textContent = "⏳ Você já enviou " + LIMITE_IDEIAS_DIA + " ideias hoje. A banca avalia à noite — volte amanhã!";
+    return;
+  }
+  const ideia = {
+    data: hojeStr(), hora: new Date().toLocaleTimeString("pt-BR"),
+    apelido: estado.apelido,
+    tipo: document.getElementById("id-tipo").value,
+    comodo: document.getElementById("id-comodo").value,
+    texto
+  };
+  estado.ideias.push(ideia);
+  salvar();
+  enviarPlanilha(Object.assign({ tipo:"ideia" }, ideia, { tipoIdeia: ideia.tipo }));
+  document.getElementById("id-texto").value = "";
+  aviso.textContent = "✅ Ideia enviada para a banca da IA! Resultado e pontos extras saem amanhã de manhã. (" +
+    ideiasHoje() + " de " + LIMITE_IDEIAS_DIA + " hoje)";
+  listarIdeias();
+}
+
+function listarIdeias(){
+  const div = document.getElementById("ideia-lista");
+  if(!estado.ideias.length){ div.innerHTML = ""; return; }
+  div.innerHTML = "<p class='suave' style='margin-bottom:8px'>Suas ideias enviadas:</p>" +
+    estado.ideias.slice().reverse().map(i =>
+      "<div class='item'><strong>" + i.tipo + "</strong> · " + i.comodo + " · " + i.data +
+      "<br>" + i.texto + "</div>").join("");
+}
+
+/* =====================================================================
+   PLACAR
+===================================================================== */
+function codigoVerificador(){
+  const s = estado.apelido + "|" + pontosTotais() + "|CASASEGURA";
+  let h = 0;
+  for(const ch of s){ h = (h * 31 + ch.charCodeAt(0)) % 1679616; }
+  return h.toString(36).toUpperCase().padStart(4, "0");
+}
+
+function abrirPlacar(){
+  document.getElementById("pl-pontos").textContent = pontosTotais();
+  document.getElementById("pl-completos").textContent = rondasFeitas() + "/7";
+  document.getElementById("pl-detalhe").innerHTML = COMODOS.map(c => {
+    const r = resultadoDe(c.id);
+    return "<div>" + c.icone + " " + c.nome + ": " +
+      (r ? r.pontos + " pts (" + r.achados.length + "/5)" : "ronda pendente") + "</div>";
+  }).join("");
+  document.getElementById("pl-aviso").textContent = "";
+  mostrarTela("tela-placar");
+}
+
+function textoPontuacao(){
+  return "CASA SEGURA — Caça aos Riscos\n" +
+    "Apelido: " + estado.apelido + "\n" +
+    "Pontos da busca: " + pontosTotais() + "\n" +
+    "Perigos achados: " + totalAchados() + " de " + TOTAL_RISCOS + "\n" +
+    "Rondas feitas: " + rondasFeitas() + " de 7\n" +
+    "Ideias enviadas à banca: " + estado.ideias.length + "\n" +
+    "Código: " + codigoVerificador();
+}
+
+function enviarPontuacaoZap(){
+  window.open("https://wa.me/?text=" + encodeURIComponent(textoPontuacao()), "_blank");
+}
+
+function copiarPontuacao(){
+  const avisar = ok => { document.getElementById("pl-aviso").textContent =
+    ok ? "✅ Pontuação copiada!" : "⚠️ Não consegui copiar — use o botão do WhatsApp."; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(textoPontuacao()).then(() => avisar(true), () => avisar(false));
+  }else{ avisar(false); }
+}
+
+function reiniciarJogo(){
+  if(confirm("Recomeçar do zero? Pontos e rondas deste aparelho serão apagados (as ideias já enviadas à banca continuam valendo).")){
+    estado.comodos = {};
+    salvar();
+    montarMapa();
+    mostrarTela("tela-mapa");
+  }
+}
+
+/* ---------- envio opcional para planilha central ---------- */
+function enviarPlanilha(dados){
+  if(!CONFIG.PLANILHA_URL) return;
+  try{
+    fetch(CONFIG.PLANILHA_URL, { method:"POST", mode:"no-cors", body: JSON.stringify(dados) });
+  }catch(e){}
+}
+
+/* ---------- retomada de sessão ---------- */
+if(estado.apelido && rondasFeitas() > 0){
+  montarMapa();
+  mostrarTela("tela-mapa");
+}
+listarIdeias();
+</script>
+</body>
+</html>

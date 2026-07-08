@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa Segura — Qual jogo você prefere?</title>
+<style>
+  :root{
+    --fundo:#faf6ee;
+    --cartao:#ffffff;
+    --texto:#2b2b2b;
+    --texto-suave:#5a5a5a;
+    --verde:#2e7d32;
+    --verde-claro:#e8f5e9;
+    --azul:#1565c0;
+    --azul-claro:#e3f0fd;
+    --laranja:#e65100;
+    --laranja-claro:#fff3e0;
+    --borda:#ddd2bd;
+    --sombra:0 2px 10px rgba(0,0,0,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:18px}
+  body{
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:var(--fundo);
+    color:var(--texto);
+    line-height:1.5;
+    min-height:100vh;
+  }
+  .pagina{max-width:760px;margin:0 auto;padding:16px 14px 60px}
+
+  /* ---------- telas ---------- */
+  .tela{display:none}
+  .tela.ativa{display:block;animation:surge .35s ease}
+  @keyframes surge{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  h1{font-size:1.7rem;line-height:1.25;margin-bottom:12px}
+  h2{font-size:1.35rem;line-height:1.3;margin-bottom:10px}
+  p{margin-bottom:12px}
+  .suave{color:var(--texto-suave)}
+  .centro{text-align:center}
+
+  .cartao{
+    background:var(--cartao);
+    border:1px solid var(--borda);
+    border-radius:16px;
+    box-shadow:var(--sombra);
+    padding:22px 20px;
+    margin-bottom:16px;
+  }
+
+  .etiqueta{
+    display:inline-block;
+    font-size:.95rem;
+    font-weight:600;
+    padding:5px 14px;
+    border-radius:999px;
+    margin-bottom:10px;
+  }
+  .etiqueta.verde{background:var(--verde-claro);color:var(--verde)}
+  .etiqueta.azul{background:var(--azul-claro);color:var(--azul)}
+  .etiqueta.laranja{background:var(--laranja-claro);color:var(--laranja)}
+
+  /* ---------- botões ---------- */
+  button{
+    font-family:inherit;
+    font-size:1.1rem;
+    cursor:pointer;
+    border:none;
+    border-radius:14px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn-grande{
+    display:block;
+    width:100%;
+    min-height:64px;
+    padding:14px 20px;
+    background:var(--verde);
+    color:#fff;
+    font-weight:600;
+    box-shadow:var(--sombra);
+    margin-top:8px;
+  }
+  .btn-grande:disabled{background:#b9b9b9;cursor:default;box-shadow:none}
+  .btn-grande:not(:disabled):active{transform:scale(.98)}
+
+  .btn-opcao{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
+    min-height:64px;
+    padding:12px 18px;
+    margin-top:12px;
+    background:#fff;
+    border:2px solid var(--borda);
+    border-radius:14px;
+    font-size:1.15rem;
+    text-align:left;
+  }
+  .btn-opcao .icone{font-size:1.6rem}
+  .btn-opcao.escolhida{border-color:var(--verde);background:var(--verde-claro)}
+  .btn-opcao:active{transform:scale(.99)}
+
+  .link-discreto{
+    background:none;
+    color:var(--texto-suave);
+    text-decoration:underline;
+    font-size:.95rem;
+    padding:10px;
+    display:inline-block;
+  }
+
+  /* ---------- demos ---------- */
+  .palco{
+    width:100%;
+    background:#fff;
+    border:1px solid var(--borda);
+    border-radius:14px;
+    overflow:hidden;
+    margin-bottom:12px;
+  }
+  .palco svg{display:block;width:100%;height:auto}
+  .hz{cursor:pointer}
+  .caixa-msg{
+    min-height:78px;
+    background:var(--verde-claro);
+    border-radius:12px;
+    padding:12px 16px;
+    font-size:1.05rem;
+    margin-bottom:12px;
+  }
+  .contador{
+    font-weight:700;
+    color:var(--verde);
+    font-size:1.05rem;
+    margin-bottom:8px;
+  }
+
+  /* loja da reforma */
+  .loja button{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    min-height:58px;
+    padding:10px 16px;
+    margin-top:10px;
+    background:#fff;
+    border:2px solid var(--borda);
+    border-radius:12px;
+    font-size:1.05rem;
+    text-align:left;
+  }
+  .loja button .preco{font-weight:700;color:var(--azul);white-space:nowrap}
+  .loja button.feito{border-color:var(--verde);background:var(--verde-claro);cursor:default}
+  .loja button.feito .preco{color:var(--verde)}
+  .loja button.sem-verba{animation:treme .35s}
+  @keyframes treme{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+  .painel-jogo{
+    display:flex;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .painel-jogo .mostrador{
+    flex:1;
+    background:#fff;
+    border:1px solid var(--borda);
+    border-radius:12px;
+    padding:10px 14px;
+  }
+  .mostrador .rotulo{font-size:.9rem;color:var(--texto-suave)}
+  .mostrador .valor{font-size:1.3rem;font-weight:700}
+  .barra-fundo{
+    height:16px;background:#eee;border-radius:999px;overflow:hidden;margin-top:6px;
+  }
+  .barra-cheia{
+    height:100%;width:0%;background:var(--verde);border-radius:999px;
+    transition:width .5s ease;
+  }
+
+  /* ---------- perguntas ---------- */
+  .progresso{
+    font-size:1rem;color:var(--texto-suave);margin-bottom:10px;font-weight:600;
+  }
+  .pontos{display:flex;gap:6px;margin-bottom:16px}
+  .pontos span{flex:1;height:8px;border-radius:999px;background:#e2dac9}
+  .pontos span.feito{background:var(--verde)}
+
+  textarea{
+    width:100%;
+    min-height:120px;
+    font-family:inherit;
+    font-size:1.1rem;
+    padding:14px;
+    border:2px solid var(--borda);
+    border-radius:12px;
+    resize:vertical;
+  }
+
+  /* ---------- final ---------- */
+  .resumo{
+    background:var(--verde-claro);
+    border-radius:12px;
+    padding:16px;
+    margin-bottom:14px;
+    font-size:1.05rem;
+  }
+  .resumo div{margin-bottom:6px}
+  .btn-zap{background:#25d366}
+  .btn-copiar{background:var(--azul)}
+  .aviso-envio{font-size:.95rem;margin-top:10px}
+
+  .painel-admin{display:none;margin-top:20px}
+  .painel-admin.aberto{display:block}
+  .painel-admin textarea{min-height:160px;font-size:.85rem;font-family:monospace}
+
+  .rodape{
+    text-align:center;
+    color:var(--texto-suave);
+    font-size:.85rem;
+    margin-top:30px;
+  }
+</style>
+</head>
+<body>
+<div class="pagina">
+
+  <!-- ============ TELA INICIAL ============ -->
+  <section class="tela ativa" id="tela-inicio">
+    <div class="cartao centro">
+      <div style="font-size:3rem">🏠</div>
+      <h1>Casa Segura<br><span style="font-size:1.1rem;font-weight:400" class="suave">Movimento sem quedas</span></h1>
+      <p>Estamos criando um <strong>jogo gratuito</strong> que ensina, brincando, como deixar a casa mais segura contra quedas.</p>
+      <p>Preparamos <strong>3 mini-jogos de experimentação</strong>. Você vai testar cada um em poucos minutos e depois responder <strong>10 perguntas rápidas</strong> sobre o que achou.</p>
+      <p class="suave">Não pedimos nome nem dados pessoais. Leva uns 5 minutos.</p>
+      <button class="btn-grande" onclick="mostrarTela('tela-caca')">Começar 👉</button>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 1: CAÇA AOS RISCOS ============ -->
+  <section class="tela" id="tela-caca">
+    <div class="cartao">
+      <span class="etiqueta laranja">Mini-jogo 1 de 3 · parte 1: a sala</span>
+      <h2>🔍 Caça aos Riscos</h2>
+      <p><strong>Toque nos perigos escondidos</strong> nesta sala. Há 4 coisas que podem causar uma queda.</p>
+      <div class="contador" id="caca-contador">Encontrados: 0 de 4</div>
+      <div class="palco">
+        <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" id="caca-svg">
+          <!-- parede e chão -->
+          <rect x="0" y="0" width="800" height="300" fill="#f7efe2"/>
+          <rect x="0" y="300" width="800" height="150" fill="#d8bf9a"/>
+          <line x1="0" y1="300" x2="800" y2="300" stroke="#b89b6f" stroke-width="3"/>
+          <!-- janela -->
+          <rect x="60" y="55" width="150" height="115" fill="#bfe0f5" stroke="#8a6d3b" stroke-width="6"/>
+          <line x1="135" y1="55" x2="135" y2="170" stroke="#8a6d3b" stroke-width="5"/>
+          <line x1="60" y1="112" x2="210" y2="112" stroke="#8a6d3b" stroke-width="5"/>
+          <!-- quadro -->
+          <rect x="560" y="60" width="90" height="70" fill="#fff" stroke="#8a6d3b" stroke-width="5"/>
+          <path d="M570 115 L595 85 L615 105 L630 92 L640 115 Z" fill="#7fb069"/>
+          <circle cx="585" cy="78" r="7" fill="#f4c542"/>
+          <!-- estante alta com pote -->
+          <rect x="620" y="150" width="150" height="12" fill="#8a6d3b"/>
+          <rect x="655" y="118" width="34" height="32" fill="#c96f4a" rx="4"/>
+          <!-- rack e TV -->
+          <rect x="250" y="245" width="170" height="58" fill="#8a6d3b" rx="6"/>
+          <rect x="265" y="172" width="140" height="80" fill="#333" rx="6"/>
+          <rect x="272" y="179" width="126" height="60" fill="#5a8fbf" rx="3"/>
+          <!-- RISCO: fio da TV atravessando o chão -->
+          <g class="hz" id="hz-fio">
+            <path d="M415 260 C 445 305, 480 330, 540 345" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+            <path d="M540 345 q 15 6 8 14" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="490" cy="322" r="55" fill="transparent"/>
+            <circle class="marca" cx="490" cy="322" r="46" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+          </g>
+          <!-- RISCO: tapete solto -->
+          <g class="hz" id="hz-tapete">
+            <rect x="315" y="358" width="190" height="52" rx="24" fill="#c0392b"/>
+            <rect x="335" y="368" width="150" height="32" rx="16" fill="#e74c3c"/>
+            <path d="M318 366 q -10 -10 4 -14" fill="none" stroke="#96281b" stroke-width="6"/>
+            <circle cx="410" cy="384" r="60" fill="transparent"/>
+            <circle class="marca" cx="410" cy="384" r="52" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+          </g>
+          <!-- RISCO: chinelos no caminho -->
+          <g class="hz" id="hz-chinelo">
+            <ellipse cx="165" cy="392" rx="30" ry="13" fill="#7d5ba6"/>
+            <ellipse cx="205" cy="405" rx="30" ry="13" fill="#7d5ba6" transform="rotate(18 205 405)"/>
+            <circle cx="185" cy="398" r="50" fill="transparent"/>
+            <circle class="marca" cx="185" cy="398" r="44" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+          </g>
+          <!-- RISCO: banquinho para alcançar a estante -->
+          <g class="hz" id="hz-banquinho">
+            <rect x="655" y="330" width="80" height="14" rx="4" fill="#b07d3f"/>
+            <rect x="662" y="344" width="12" height="52" fill="#8a6d3b"/>
+            <rect x="716" y="344" width="12" height="52" fill="#8a6d3b"/>
+            <circle cx="695" cy="355" r="52" fill="transparent"/>
+            <circle class="marca" cx="695" cy="355" r="46" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+          </g>
+        </svg>
+      </div>
+      <div class="caixa-msg" id="caca-msg">Toque na tela, em cima de cada coisa que parece perigosa. 👆</div>
+      <button class="btn-grande" id="caca-continuar" disabled onclick="mostrarTela('tela-caca2')">Agora a cozinha ➜</button>
+      <div class="centro"><button class="link-discreto" onclick="mostrarTela('tela-reforma')">pular este mini-jogo</button></div>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 1b: CAÇA AOS RISCOS — COZINHA ============ -->
+  <section class="tela" id="tela-caca2">
+    <div class="cartao">
+      <span class="etiqueta laranja">Mini-jogo 1 de 3 · parte 2: a cozinha</span>
+      <h2>🔍 Caça aos Riscos</h2>
+      <p>Agora <strong>a cozinha</strong>. Há mais 4 perigos escondidos aqui.</p>
+      <div class="contador" id="caca2-contador">Encontrados: 0 de 4</div>
+      <div class="palco">
+        <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg" id="caca2-svg">
+          <!-- parede e chão -->
+          <rect x="0" y="0" width="800" height="300" fill="#eef0e2"/>
+          <rect x="0" y="300" width="800" height="150" fill="#cfc7b5"/>
+          <line x1="0" y1="300" x2="800" y2="300" stroke="#a89a80" stroke-width="3"/>
+          <!-- azulejos atrás da pia -->
+          <rect x="30" y="120" width="270" height="120" fill="#dceef2"/>
+          <line x1="30" y1="160" x2="300" y2="160" stroke="#c2dde4" stroke-width="3"/>
+          <line x1="30" y1="200" x2="300" y2="200" stroke="#c2dde4" stroke-width="3"/>
+          <line x1="120" y1="120" x2="120" y2="240" stroke="#c2dde4" stroke-width="3"/>
+          <line x1="210" y1="120" x2="210" y2="240" stroke="#c2dde4" stroke-width="3"/>
+          <!-- pia e armário de baixo -->
+          <rect x="40" y="240" width="240" height="16" fill="#b0a08a"/>
+          <rect x="50" y="256" width="220" height="100" fill="#8a6d3b"/>
+          <rect x="100" y="232" width="90" height="12" fill="#cfd8dc"/>
+          <path d="M145 232 v-22 h26 v10" fill="none" stroke="#888" stroke-width="6"/>
+          <!-- fogão -->
+          <rect x="320" y="250" width="110" height="106" fill="#dfdfdf" stroke="#b5b5b5" stroke-width="3"/>
+          <rect x="330" y="258" width="90" height="34" fill="#3a3a3a" rx="4"/>
+          <circle cx="352" cy="275" r="10" fill="#666"/>
+          <circle cx="398" cy="275" r="10" fill="#666"/>
+          <!-- geladeira -->
+          <rect x="660" y="150" width="110" height="225" rx="8" fill="#e9e9e9" stroke="#c0c0c0" stroke-width="3"/>
+          <line x1="672" y1="200" x2="672" y2="250" stroke="#a0a0a0" stroke-width="6"/>
+          <!-- RISCO: lâmpada queimada / luz fraca -->
+          <g class="hz" id="hz2-lampada">
+            <line x1="480" y1="0" x2="480" y2="60" stroke="#555" stroke-width="5"/>
+            <path d="M450 60 h60 l-14 26 h-32 Z" fill="#7a7a6a"/>
+            <circle cx="480" cy="96" r="13" fill="#d8d4c0" stroke="#b5b09a" stroke-width="3"/>
+            <text x="512" y="80" font-size="24" fill="#8a8a7a" font-family="Segoe UI, Arial">zzt...</text>
+            <circle cx="480" cy="85" r="55" fill="transparent"/>
+            <circle class="marca" cx="480" cy="85" r="48" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+          </g>
+          <!-- RISCO: água no chão perto da pia -->
+          <g class="hz" id="hz2-agua">
+            <ellipse cx="215" cy="400" rx="48" ry="15" fill="#9cc7e8" opacity="0.85"/>
+            <ellipse cx="245" cy="390" rx="16" ry="6" fill="#b8daf2" opacity="0.85"/>
+            <circle cx="220" cy="397" r="52" fill="transparent"/>
+            <circle class="marca" cx="220" cy="397" r="46" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+          </g>
+          <!-- RISCO: pano/tapete de pano na frente da pia -->
+          <g class="hz" id="hz2-pano">
+            <rect x="55" y="378" width="110" height="32" rx="14" fill="#c98b4a"/>
+            <line x1="75" y1="378" x2="75" y2="410" stroke="#a86c30" stroke-width="5"/>
+            <line x1="105" y1="378" x2="105" y2="410" stroke="#a86c30" stroke-width="5"/>
+            <line x1="135" y1="378" x2="135" y2="410" stroke="#a86c30" stroke-width="5"/>
+            <circle cx="110" cy="394" r="50" fill="transparent"/>
+            <circle class="marca" cx="110" cy="394" r="44" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+          </g>
+          <!-- RISCO: gaveta aberta na altura das pernas -->
+          <g class="hz" id="hz2-gaveta">
+            <rect x="470" y="260" width="150" height="110" fill="#8a6d3b"/>
+            <rect x="446" y="300" width="100" height="30" fill="#a0794a" stroke="#7a5a30" stroke-width="3"/>
+            <rect x="452" y="330" width="94" height="10" fill="#6a4e28"/>
+            <circle cx="490" cy="318" r="52" fill="transparent"/>
+            <circle class="marca" cx="490" cy="318" r="46" fill="none" stroke="#2e7d32" stroke-width="6" opacity="0"/>
+          </g>
+        </svg>
+      </div>
+      <div class="caixa-msg" id="caca2-msg">Mesma coisa: toque em cima de cada perigo que encontrar. 👆</div>
+      <button class="btn-grande" id="caca2-continuar" disabled onclick="mostrarTela('tela-reforma')">Continuar ➜</button>
+      <div class="centro"><button class="link-discreto" onclick="mostrarTela('tela-reforma')">pular esta parte</button></div>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2: REFORMA DA CASA ============ -->
+  <section class="tela" id="tela-reforma">
+    <div class="cartao">
+      <span class="etiqueta azul">Mini-jogo 2 de 3</span>
+      <h2>🛠️ Reforma da Casa</h2>
+      <p>Você tem <strong>R$ 500</strong> para deixar este corredor e este banheiro mais seguros. <strong>Escolha as melhorias</strong> — mas o dinheiro não dá para tudo!</p>
+      <div class="painel-jogo">
+        <div class="mostrador">
+          <div class="rotulo">💰 Orçamento</div>
+          <div class="valor" id="rf-saldo">R$ 500</div>
+        </div>
+        <div class="mostrador">
+          <div class="rotulo">🛡️ Segurança</div>
+          <div class="valor" id="rf-seg">0%</div>
+          <div class="barra-fundo"><div class="barra-cheia" id="rf-barra"></div></div>
+        </div>
+      </div>
+      <div class="palco">
+        <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" id="rf-svg">
+          <!-- fundo geral -->
+          <rect x="0" y="0" width="800" height="290" fill="#f7efe2"/>
+          <rect x="0" y="290" width="800" height="130" fill="#d8bf9a"/>
+          <line x1="0" y1="290" x2="800" y2="290" stroke="#b89b6f" stroke-width="3"/>
+          <!-- divisória corredor | banheiro -->
+          <rect x="392" y="0" width="16" height="420" fill="#8a6d3b"/>
+          <text x="196" y="36" font-size="24" text-anchor="middle" fill="#7a6a4f" font-family="Segoe UI, Arial">CORREDOR</text>
+          <text x="600" y="36" font-size="24" text-anchor="middle" fill="#7a6a4f" font-family="Segoe UI, Arial">BANHEIRO</text>
+          <!-- banheiro: azulejos -->
+          <rect x="408" y="50" width="392" height="240" fill="#e8f4f8"/>
+          <line x1="408" y1="130" x2="800" y2="130" stroke="#cfe4ec" stroke-width="3"/>
+          <line x1="408" y1="210" x2="800" y2="210" stroke="#cfe4ec" stroke-width="3"/>
+          <line x1="530" y1="50" x2="530" y2="290" stroke="#cfe4ec" stroke-width="3"/>
+          <line x1="660" y1="50" x2="660" y2="290" stroke="#cfe4ec" stroke-width="3"/>
+          <!-- vaso sanitário -->
+          <rect x="470" y="215" width="26" height="60" fill="#fff" stroke="#aaa" stroke-width="3" rx="6"/>
+          <ellipse cx="520" cy="278" rx="42" ry="22" fill="#fff" stroke="#aaa" stroke-width="3"/>
+          <!-- box do chuveiro -->
+          <rect x="690" y="60" width="100" height="230" fill="#d3ecf5" stroke="#9fc6d8" stroke-width="4" opacity=".8"/>
+          <path d="M700 78 h30 v14" fill="none" stroke="#888" stroke-width="6"/>
+          <!-- degrau na porta do banheiro -->
+          <rect x="408" y="290" width="90" height="22" fill="#b89b6f" stroke="#96774a" stroke-width="3" id="rf-degrau"/>
+          <!-- melhoria: fita antiderrapante (escondida) -->
+          <g id="rf-fita" opacity="0">
+            <rect x="408" y="290" width="90" height="10" fill="#f4c542"/>
+            <path d="M414 300 l8 -10 M430 300 l8 -10 M446 300 l8 -10 M462 300 l8 -10 M478 300 l8 -10" stroke="#333" stroke-width="4"/>
+          </g>
+          <!-- corredor: cama ao fundo -->
+          <rect x="10" y="230" width="120" height="60" fill="#7d5ba6" rx="8"/>
+          <rect x="14" y="212" width="44" height="26" fill="#fff" rx="8"/>
+          <!-- tapete do corredor -->
+          <g id="rf-tapete">
+            <rect x="180" y="330" width="150" height="44" rx="20" fill="#c0392b"/>
+            <rect x="197" y="339" width="116" height="26" rx="13" fill="#e74c3c"/>
+          </g>
+          <!-- melhoria: barra de apoio (escondida) -->
+          <g id="rf-barra-apoio" opacity="0">
+            <rect x="560" y="180" width="14" height="80" rx="7" fill="#9aa5ad" stroke="#6d787f" stroke-width="3"/>
+            <rect x="548" y="172" width="38" height="12" rx="6" fill="#6d787f"/>
+            <rect x="548" y="256" width="38" height="12" rx="6" fill="#6d787f"/>
+          </g>
+          <!-- melhoria: alexa (escondida) -->
+          <g id="rf-alexa" opacity="0">
+            <rect x="30" y="120" width="90" height="12" fill="#8a6d3b"/>
+            <rect x="55" y="86" width="36" height="34" rx="10" fill="#37474f"/>
+            <ellipse cx="73" cy="88" rx="18" ry="5" fill="#29b6f6"/>
+            <text x="73" y="150" font-size="15" text-anchor="middle" fill="#37474f" font-family="Segoe UI, Arial">Alexa</text>
+          </g>
+          <!-- melhoria: luz de sensor (escondida; desenhada antes da escuridão sumir) -->
+          <g id="rf-luz" opacity="0">
+            <circle cx="360" cy="270" r="16" fill="#ffe082" stroke="#f4c542" stroke-width="4"/>
+            <path d="M338 250 l-12 -12 M382 250 l12 -12 M360 244 v-18" stroke="#f4c542" stroke-width="5" stroke-linecap="round"/>
+          </g>
+          <!-- escuridão do corredor -->
+          <rect x="0" y="0" width="392" height="420" fill="#101024" opacity="0.62" id="rf-escuro" style="transition:opacity .6s"/>
+        </svg>
+      </div>
+      <div class="loja" id="rf-loja"></div>
+      <div class="caixa-msg" id="rf-msg" style="margin-top:12px">Toque nas melhorias abaixo para aplicá-las na casa. 👇</div>
+      <button class="btn-grande" id="rf-continuar" disabled onclick="mostrarTela('tela-jose')">Continuar ➜</button>
+      <div class="centro"><button class="link-discreto" onclick="mostrarTela('tela-jose')">pular este mini-jogo</button></div>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 3: UM DIA DO SEU JOSÉ ============ -->
+  <section class="tela" id="tela-jose">
+    <div class="cartao">
+      <span class="etiqueta verde">Mini-jogo 3 de 3</span>
+      <h2>🌙 Um Dia do Seu José</h2>
+      <div class="palco" id="jose-palco"></div>
+      <div class="caixa-msg" id="jose-msg"></div>
+      <button class="btn-grande" id="jose-btn" onclick="joseAvancar()">Continuar ➜</button>
+      <div class="centro"><button class="link-discreto" onclick="iniciarPerguntas()">pular este mini-jogo</button></div>
+    </div>
+  </section>
+
+  <!-- ============ PERGUNTAS ============ -->
+  <section class="tela" id="tela-pergunta">
+    <div class="cartao">
+      <div class="progresso" id="pg-progresso"></div>
+      <div class="pontos" id="pg-pontos"></div>
+      <h2 id="pg-texto"></h2>
+      <div id="pg-opcoes"></div>
+    </div>
+  </section>
+
+  <!-- ============ FINAL ============ -->
+  <section class="tela" id="tela-final">
+    <div class="cartao centro">
+      <div style="font-size:3rem">🙏</div>
+      <h1>Muito obrigado!</h1>
+      <p>Sua opinião vai ajudar a construir um jogo que pode evitar quedas de verdade.</p>
+      <div class="resumo" id="final-resumo" style="text-align:left"></div>
+      <p><strong>Último passo:</strong> envie sua resposta tocando no botão verde. 👇</p>
+      <button class="btn-grande btn-zap" onclick="enviarWhatsApp()">📱 Enviar por WhatsApp</button>
+      <button class="btn-grande btn-copiar" onclick="copiarResposta()">📄 Copiar resposta</button>
+      <div class="aviso-envio" id="final-aviso"></div>
+      <button class="btn-grande" style="background:#8a6d3b;margin-top:24px" onclick="novaResposta()">🔄 Nova resposta (próxima pessoa)</button>
+      <div class="centro" style="margin-top:16px">
+        <button class="link-discreto" onclick="alternarAdmin()" id="admin-link">📋 respostas guardadas neste aparelho (0)</button>
+      </div>
+      <div class="painel-admin" id="painel-admin" style="text-align:left">
+        <p class="suave">Área do facilitador — todas as respostas registradas neste aparelho, em formato de planilha (CSV). Copie e cole no Excel ou no Google Planilhas.</p>
+        <textarea id="admin-csv" readonly></textarea>
+        <button class="btn-grande btn-copiar" onclick="copiarCSV()">Copiar tabela (CSV)</button>
+        <div class="centro"><button class="link-discreto" onclick="apagarRespostas()">apagar todas as respostas deste aparelho</button></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="rodape">Casa Segura — Movimento sem quedas · enquete anônima · nenhum dado pessoal é coletado</div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURAÇÃO
+   Para envio automático a uma planilha Google, cole aqui a URL do
+   aplicativo web do Apps Script (instruções no README.md). Se ficar
+   vazio, o envio é feito por WhatsApp / copiar-colar.
+===================================================================== */
+const PLANILHA_URL = "";
+
+/* ---------- proteção anti-toque-duplo (comum em idosos) ---------- */
+let _ultimoToque = 0;
+function toqueValido(){
+  const agora = Date.now();
+  if(agora - _ultimoToque < 400) return false;
+  _ultimoToque = agora;
+  return true;
+}
+
+/* ---------- navegação entre telas ---------- */
+function mostrarTela(id){
+  document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
+  document.getElementById(id).classList.add("ativa");
+  window.scrollTo({top:0, behavior:"smooth"});
+  if(id === "tela-jose") joseIniciar();
+}
+
+/* =====================================================================
+   MINI-JOGO 1: CAÇA AOS RISCOS
+===================================================================== */
+const CACA_RISCOS_SALA = {
+  "hz-tapete":   "🧶 Tapete solto: o campeão dos tropeços! O melhor é tirar (custa R$ 0) ou fixar com base antiderrapante.",
+  "hz-fio":      "🔌 Fio atravessando o caminho: quase invisível, principalmente à noite. Prenda os fios junto à parede.",
+  "hz-chinelo":  "🩴 Chinelo largado no caminho — e chinelo folgado no pé! Calçado fechado no calcanhar segura muito melhor.",
+  "hz-banquinho":"🪜 Banquinho para alcançar o alto: causa quedas graves. Guarde as coisas mais usadas na altura das mãos."
+};
+const CACA_RISCOS_COZINHA = {
+  "hz2-agua":    "💧 Água no chão perto da pia: seque na hora! Chão molhado é escorregão na certa.",
+  "hz2-pano":    "🧺 Pano ou tapete de pano na frente da pia: escorrega fácil. Troque por um modelo de borracha antiderrapante.",
+  "hz2-gaveta":  "🗄️ Gaveta aberta na altura das pernas: tropeço e pancada dolorida. O hábito de fechar na hora protege.",
+  "hz2-lampada": "💡 Lâmpada queimada ou fraca: na cozinha, enxergar bem evita tropeços, cortes e queimaduras. Troque sem adiar."
+};
+
+function montarCaca(riscos, idContador, idMsg, idBtn, msgInicial){
+  const total = Object.keys(riscos).length;
+  const estado = { achados: 0 };
+  Object.keys(riscos).forEach(id => {
+    document.getElementById(id).addEventListener("click", function(){
+      if(this.dataset.achado) return;
+      this.dataset.achado = "1";
+      this.querySelector(".marca").setAttribute("opacity", "1");
+      estado.achados++;
+      document.getElementById(idContador).textContent =
+        "Encontrados: " + estado.achados + " de " + total;
+      document.getElementById(idMsg).innerHTML =
+        (estado.achados === total ? "🎉 <strong>Você encontrou todos!</strong> " : "<strong>Achou!</strong> ") + riscos[id];
+      if(estado.achados >= 2) document.getElementById(idBtn).disabled = false;
+    });
+  });
+  estado.reset = function(){
+    estado.achados = 0;
+    document.getElementById(idContador).textContent = "Encontrados: 0 de " + total;
+    document.getElementById(idMsg).innerHTML = msgInicial;
+    document.getElementById(idBtn).disabled = true;
+    Object.keys(riscos).forEach(id => {
+      const g = document.getElementById(id);
+      delete g.dataset.achado;
+      g.querySelector(".marca").setAttribute("opacity", "0");
+    });
+  };
+  return estado;
+}
+
+const cacaSala = montarCaca(CACA_RISCOS_SALA, "caca-contador", "caca-msg", "caca-continuar",
+  "Toque na tela, em cima de cada coisa que parece perigosa. 👆");
+const cacaCozinha = montarCaca(CACA_RISCOS_COZINHA, "caca2-contador", "caca2-msg", "caca2-continuar",
+  "Mesma coisa: toque em cima de cada perigo que encontrar. 👆");
+
+/* =====================================================================
+   MINI-JOGO 2: REFORMA DA CASA
+===================================================================== */
+const RF_ITENS = [
+  {id:"tapete", nome:"🧶 Tirar o tapete solto do corredor", preco:0,   seg:30,
+   aplicar(){ document.getElementById("rf-tapete").style.opacity = "0"; },
+   msg:"O tapete saiu — e não custou nada! As melhorias gratuitas costumam ser as mais valiosas."},
+  {id:"luz",    nome:"💡 Luz de sensor no corredor",         preco:60,  seg:25,
+   aplicar(){ document.getElementById("rf-escuro").setAttribute("opacity","0.08");
+              document.getElementById("rf-luz").setAttribute("opacity","1"); },
+   msg:"Agora o caminho noturno para o banheiro acende sozinho. Metade das quedas acontece à noite!"},
+  {id:"barra",  nome:"🚿 Barra de apoio no banheiro",        preco:80,  seg:20,
+   aplicar(){ document.getElementById("rf-barra-apoio").setAttribute("opacity","1"); },
+   msg:"O banheiro é o cômodo onde mais acontecem quedas graves. A barra dá firmeza para sentar e levantar."},
+  {id:"fita",   nome:"⚠️ Fita antiderrapante no degrau",     preco:30,  seg:10,
+   aplicar(){ document.getElementById("rf-fita").setAttribute("opacity","1"); },
+   msg:"O degrau agora tem faixa de alerta antiderrapante — fica visível e segura o pé."},
+  {id:"alexa",  nome:"🗣️ Alexa: acender luz e ligar por voz", preco:350, seg:15,
+   aplicar(){ document.getElementById("rf-alexa").setAttribute("opacity","1"); },
+   msg:"Agora dá para acender a luz e chamar a família só com a voz — sem levantar no escuro."}
+];
+let rfSaldo = 500, rfSeguranca = 0, rfAplicados = 0;
+
+const rfLoja = document.getElementById("rf-loja");
+RF_ITENS.forEach(item => {
+  const b = document.createElement("button");
+  b.id = "rf-btn-" + item.id;
+  b.innerHTML = "<span>" + item.nome + "</span><span class='preco'>" +
+    (item.preco === 0 ? "GRÁTIS" : "R$ " + item.preco) + "</span>";
+  b.addEventListener("click", () => rfComprar(item, b));
+  rfLoja.appendChild(b);
+});
+
+function rfComprar(item, botao){
+  if(botao.classList.contains("feito")) return;
+  if(item.preco > rfSaldo){
+    botao.classList.remove("sem-verba");
+    void botao.offsetWidth; /* reinicia a animação */
+    botao.classList.add("sem-verba");
+    document.getElementById("rf-msg").innerHTML =
+      "😅 <strong>O orçamento não dá para esse item.</strong> No jogo completo é assim também: a graça está em escolher bem onde investir!";
+    return;
+  }
+  rfSaldo -= item.preco;
+  rfSeguranca += item.seg;
+  rfAplicados++;
+  item.aplicar();
+  botao.classList.add("feito");
+  botao.querySelector(".preco").textContent = "✓ feito";
+  document.getElementById("rf-saldo").textContent = "R$ " + rfSaldo;
+  document.getElementById("rf-seg").textContent = rfSeguranca + "%";
+  document.getElementById("rf-barra").style.width = Math.min(rfSeguranca,100) + "%";
+  document.getElementById("rf-msg").innerHTML = "✅ " + item.msg;
+  if(rfAplicados >= 2) document.getElementById("rf-continuar").disabled = false;
+}
+
+/* =====================================================================
+   MINI-JOGO 3: UM DIA DO SEU JOSÉ
+===================================================================== */
+const JOSE_FIG = (x, y, inclinacao, cor) => `
+  <g transform="translate(${x} ${y}) rotate(${inclinacao})">
+    <circle cx="0" cy="-52" r="16" fill="#e8b98a"/>
+    <path d="M-14 -60 a16 16 0 0 1 28 0 z" fill="#ddd"/>
+    <rect x="-14" y="-38" width="28" height="46" rx="12" fill="${cor}"/>
+    <rect x="-12" y="6" width="10" height="34" rx="5" fill="#5a4a3a"/>
+    <rect x="2" y="6" width="10" height="34" rx="5" fill="#5a4a3a"/>
+    <line x1="14" y1="-20" x2="26" y2="38" stroke="#8a6d3b" stroke-width="5" stroke-linecap="round"/>
+  </g>`;
+
+const JOSE_PASSOS = [
+  { texto:"<strong>3 horas da manhã.</strong> Seu José, 78 anos, acorda com vontade de ir ao banheiro.",
+    cena:`<rect width="600" height="330" fill="#1a2340"/>
+      <circle cx="520" cy="60" r="26" fill="#f4e9c8"/><circle cx="510" cy="52" r="22" fill="#1a2340"/>
+      <rect x="40" y="200" width="180" height="70" rx="10" fill="#7d5ba6"/>
+      <rect x="46" y="178" width="60" height="30" rx="10" fill="#eee"/>
+      <rect x="0" y="270" width="600" height="60" fill="#3a3a55"/>
+      ${JOSE_FIG(280, 250, 0, "#4a6f8a")}` },
+  { texto:"O corredor está <strong>escuro</strong>. Ele conhece o caminho de cor... mas não enxerga o tapete.",
+    cena:`<rect width="600" height="330" fill="#12121f"/>
+      <rect x="0" y="270" width="600" height="60" fill="#1c1c2e"/>
+      <rect x="480" y="60" width="90" height="210" fill="#1f1f33" stroke="#2e2e4a" stroke-width="4"/>
+      <rect x="250" y="285" width="130" height="26" rx="13" fill="#3a1f1c"/>
+      ${JOSE_FIG(150, 250, 0, "#3a4a5a")}
+      <text x="300" y="45" font-size="22" fill="#555577" text-anchor="middle" font-family="Segoe UI, Arial">🌙 corredor, 3h da manhã</text>` },
+  { texto:"<strong>Quase caiu!</strong> Tropeçou no tapete e se segurou na parede no último segundo. Aos 78 anos, uma queda pode significar fratura — e meses de recuperação.",
+    cena:`<rect width="600" height="330" fill="#12121f"/>
+      <rect x="0" y="270" width="600" height="60" fill="#1c1c2e"/>
+      <rect x="480" y="60" width="90" height="210" fill="#1f1f33" stroke="#2e2e4a" stroke-width="4"/>
+      <rect x="250" y="290" width="130" height="26" rx="13" fill="#5a2f28" transform="rotate(-8 315 300)"/>
+      ${JOSE_FIG(300, 245, 22, "#3a4a5a")}
+      <text x="380" y="120" font-size="52" fill="#e74c3c" text-anchor="middle" font-family="Segoe UI, Arial" font-weight="bold">!</text>
+      <text x="430" y="90" font-size="38" fill="#e74c3c" text-anchor="middle" font-family="Segoe UI, Arial" font-weight="bold">!</text>` },
+  { texto:"Agora veja a <strong>mesma noite numa casa preparada</strong>: a luzinha de sensor acende sozinha e o tapete já não está lá.",
+    cena:`<rect width="600" height="330" fill="#4a3f2a"/>
+      <rect x="0" y="270" width="600" height="60" fill="#8a7a55"/>
+      <ellipse cx="300" cy="300" rx="280" ry="50" fill="#ffe9a8" opacity="0.35"/>
+      <rect x="480" y="60" width="90" height="210" fill="#6a5a3f" stroke="#8a7a55" stroke-width="4"/>
+      <circle cx="80" cy="262" r="10" fill="#ffe082" stroke="#f4c542" stroke-width="3"/>
+      <path d="M66 250 l-8 -8 M94 250 l8 -8 M80 248 v-12" stroke="#f4c542" stroke-width="4" stroke-linecap="round"/>
+      ${JOSE_FIG(220, 245, 0, "#4a6f8a")}
+      <text x="300" y="45" font-size="22" fill="#d8c890" text-anchor="middle" font-family="Segoe UI, Arial">💡 a luz acendeu sozinha</text>` },
+  { texto:"Seu José foi e voltou <strong>em segurança</strong> — nem precisou acordar ninguém. No jogo completo, você prepara a casa e depois <strong>assiste ao dia dele</strong> para ver se termina bem.",
+    cena:`<rect width="600" height="330" fill="#1a2340"/>
+      <circle cx="520" cy="60" r="26" fill="#f4e9c8"/><circle cx="510" cy="52" r="22" fill="#1a2340"/>
+      <rect x="40" y="200" width="180" height="70" rx="10" fill="#7d5ba6"/>
+      <rect x="46" y="178" width="60" height="30" rx="10" fill="#eee"/>
+      <circle cx="105" cy="185" r="14" fill="#e8b98a"/>
+      <rect x="0" y="270" width="600" height="60" fill="#3a3a55"/>
+      <text x="180" y="150" font-size="30" fill="#8888bb" font-family="Segoe UI, Arial">z Z z</text>
+      <text x="300" y="60" font-size="26" fill="#7fb069" text-anchor="middle" font-family="Segoe UI, Arial">✓ noite tranquila</text>` }
+];
+let josePasso = -1;
+
+function joseIniciar(){
+  josePasso = -1;
+  joseAvancarInterno();
+}
+function joseAvancar(){
+  if(!toqueValido()) return;
+  joseAvancarInterno();
+}
+function joseAvancarInterno(){
+  josePasso++;
+  if(josePasso >= JOSE_PASSOS.length){ iniciarPerguntas(); return; }
+  const p = JOSE_PASSOS[josePasso];
+  document.getElementById("jose-palco").innerHTML =
+    '<svg viewBox="0 0 600 330" xmlns="http://www.w3.org/2000/svg">' + p.cena + "</svg>";
+  document.getElementById("jose-msg").innerHTML = p.texto;
+  document.getElementById("jose-btn").textContent =
+    (josePasso === JOSE_PASSOS.length - 1) ? "Ir para as perguntas ➜" : "Continuar ➜";
+}
+
+/* =====================================================================
+   QUESTIONÁRIO
+===================================================================== */
+const JOGOS = [
+  {valor:"Caça aos Riscos",  icone:"🔍"},
+  {valor:"Reforma da Casa",  icone:"🛠️"},
+  {valor:"Um Dia do Seu José", icone:"🌙"}
+];
+const PERGUNTAS = [
+  {id:"facil",   texto:"Qual dos três você achou MAIS FÁCIL de entender?", tipo:"jogos", nenhum:true},
+  {id:"denovo",  texto:"Qual você jogaria de novo?", tipo:"jogos", nenhum:true},
+  {id:"mudar",   texto:"Qual deles faria você MUDAR alguma coisa na sua casa?", tipo:"jogos", nenhum:true},
+  {id:"escolha", texto:"Se só UM pudesse existir, qual você escolheria?", tipo:"jogos", nenhum:false},
+  {id:"novorisco", texto:"Jogando, você lembrou de algum perigo ou solução que NÃO apareceu nos jogos? Qual?", tipo:"texto",
+   botao:"Continuar ➜", vazio:"(nada lembrado)", dica:"Exemplo: degrau da varanda, remédio que dá tontura... (pode pular)"},
+  {id:"idade",   texto:"Qual é a sua idade?", opcoes:["Menos de 60 anos","60 a 69 anos","70 a 79 anos","80 anos ou mais"]},
+  {id:"mora",    texto:"Você mora sozinho(a)?", opcoes:["Sim","Não"]},
+  {id:"tec",     texto:"Como você se sente usando celular ou computador?", opcoes:["Muito à vontade","Mais ou menos","Prefiro ter ajuda"]},
+  {id:"perfil",  texto:"Qual opção descreve melhor você?", opcoes:["Sou idoso(a)","Sou familiar ou cuidador(a) de idoso","Sou profissional convidado(a)"]},
+  {id:"comentario", texto:"Quer deixar um comentário ou sugestão? (pode pular)", tipo:"texto",
+   botao:"Concluir ✅", vazio:"(sem comentário)", dica:"Escreva aqui, se quiser..."}
+];
+let perguntaAtual = 0;
+let resposta = {};
+
+function iniciarPerguntas(){
+  perguntaAtual = 0;
+  resposta = { data: new Date().toLocaleString("pt-BR") };
+  mostrarTela("tela-pergunta");
+  renderPergunta();
+}
+
+function renderPergunta(){
+  const p = PERGUNTAS[perguntaAtual];
+  document.getElementById("pg-progresso").textContent =
+    "Pergunta " + (perguntaAtual + 1) + " de " + PERGUNTAS.length;
+  document.getElementById("pg-pontos").innerHTML =
+    PERGUNTAS.map((_, i) => "<span class='" + (i < perguntaAtual ? "feito" : "") + "'></span>").join("");
+  document.getElementById("pg-texto").textContent = p.texto;
+
+  const cont = document.getElementById("pg-opcoes");
+  cont.innerHTML = "";
+
+  if(p.tipo === "texto"){
+    const ta = document.createElement("textarea");
+    ta.id = "pg-textarea";
+    ta.placeholder = p.dica;
+    cont.appendChild(ta);
+    const bOk = document.createElement("button");
+    bOk.className = "btn-grande";
+    bOk.textContent = p.botao;
+    bOk.onclick = () => {
+      if(!toqueValido()) return;
+      responder(p.id, ta.value.trim() || p.vazio);
+    };
+    cont.appendChild(bOk);
+    return;
+  }
+
+  let opcoes;
+  if(p.tipo === "jogos"){
+    opcoes = JOGOS.map(j => ({rotulo: j.icone + " " + j.valor, valor: j.valor}));
+    if(p.nenhum) opcoes.push({rotulo:"🤷 Nenhum deles", valor:"Nenhum"});
+  }else{
+    opcoes = p.opcoes.map(o => ({rotulo:o, valor:o}));
+  }
+  opcoes.forEach(o => {
+    const b = document.createElement("button");
+    b.className = "btn-opcao";
+    b.innerHTML = "<span>" + o.rotulo + "</span>";
+    b.onclick = () => {
+      if(!toqueValido()) return;
+      b.classList.add("escolhida");
+      setTimeout(() => responder(p.id, o.valor), 250);
+    };
+    cont.appendChild(b);
+  });
+}
+
+function responder(id, valor){
+  resposta[id] = valor;
+  perguntaAtual++;
+  if(perguntaAtual < PERGUNTAS.length){
+    renderPergunta();
+  }else{
+    finalizar();
+  }
+}
+
+/* =====================================================================
+   FINALIZAÇÃO E ENVIO
+===================================================================== */
+const CHAVE_ARMAZEM = "casaSegura_respostas";
+
+function respostasGuardadas(){
+  try{ return JSON.parse(localStorage.getItem(CHAVE_ARMAZEM)) || []; }
+  catch(e){ return []; }
+}
+
+function finalizar(){
+  const lista = respostasGuardadas();
+  lista.push(resposta);
+  try{ localStorage.setItem(CHAVE_ARMAZEM, JSON.stringify(lista)); }catch(e){}
+
+  document.getElementById("final-resumo").innerHTML =
+    "<div>🔍 Mais fácil de entender: <strong>" + resposta.facil + "</strong></div>" +
+    "<div>🔁 Jogaria de novo: <strong>" + resposta.denovo + "</strong></div>" +
+    "<div>🏠 Faria mudar a casa: <strong>" + resposta.mudar + "</strong></div>" +
+    "<div>⭐ Escolha final: <strong>" + resposta.escolha + "</strong></div>";
+  atualizarAdmin();
+  mostrarTela("tela-final");
+
+  if(PLANILHA_URL){
+    fetch(PLANILHA_URL, {method:"POST", mode:"no-cors", body: JSON.stringify(resposta)})
+      .then(() => { document.getElementById("final-aviso").textContent =
+        "✅ Resposta enviada automaticamente para a planilha. Os botões acima são opcionais."; })
+      .catch(() => { document.getElementById("final-aviso").textContent =
+        "⚠️ Não consegui enviar automaticamente — use o botão do WhatsApp, por favor."; });
+  }
+}
+
+function textoResposta(){
+  return "CASA SEGURA — resposta da enquete\n" +
+    "Data: " + resposta.data + "\n" +
+    "Mais fácil de entender: " + resposta.facil + "\n" +
+    "Jogaria de novo: " + resposta.denovo + "\n" +
+    "Faria mudar a casa: " + resposta.mudar + "\n" +
+    "Escolha final: " + resposta.escolha + "\n" +
+    "Perigo/solução que faltou: " + resposta.novorisco + "\n" +
+    "Idade: " + resposta.idade + "\n" +
+    "Mora sozinho(a): " + resposta.mora + "\n" +
+    "Tecnologia: " + resposta.tec + "\n" +
+    "Perfil: " + resposta.perfil + "\n" +
+    "Comentário: " + resposta.comentario;
+}
+
+function enviarWhatsApp(){
+  window.open("https://wa.me/?text=" + encodeURIComponent(textoResposta()), "_blank");
+}
+
+function copiarResposta(){
+  copiarTexto(textoResposta(), "final-aviso", "✅ Resposta copiada! Agora é só colar numa mensagem.");
+}
+
+function copiarTexto(texto, idAviso, msgOk){
+  const avisar = ok => { document.getElementById(idAviso).textContent =
+    ok ? msgOk : "⚠️ Não consegui copiar. Selecione o texto e copie manualmente."; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(texto).then(() => avisar(true), () => avisar(false));
+  }else{
+    const ta = document.createElement("textarea");
+    ta.value = texto; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); avisar(true); }catch(e){ avisar(false); }
+    document.body.removeChild(ta);
+  }
+}
+
+/* ---------- área do facilitador ---------- */
+function gerarCSV(){
+  const limpar = s => String(s || "").replace(/;/g, ",").replace(/\n/g, " ");
+  const cab = "data;mais_facil;jogaria_de_novo;mudaria_casa;escolha_final;novo_risco_lembrado;idade;mora_sozinho;tecnologia;perfil;comentario";
+  const linhas = respostasGuardadas().map(r =>
+    [r.data, r.facil, r.denovo, r.mudar, r.escolha, limpar(r.novorisco),
+     r.idade, r.mora, r.tec, r.perfil, limpar(r.comentario)].join(";"));
+  return [cab].concat(linhas).join("\n");
+}
+function atualizarAdmin(){
+  const n = respostasGuardadas().length;
+  document.getElementById("admin-link").textContent =
+    "📋 respostas guardadas neste aparelho (" + n + ")";
+  document.getElementById("admin-csv").value = gerarCSV();
+}
+function alternarAdmin(){
+  document.getElementById("painel-admin").classList.toggle("aberto");
+  atualizarAdmin();
+}
+function copiarCSV(){
+  copiarTexto(gerarCSV(), "final-aviso", "✅ Tabela copiada! Cole no Excel ou no Google Planilhas.");
+}
+function apagarRespostas(){
+  if(confirm("Apagar TODAS as respostas guardadas neste aparelho? Essa ação não tem volta.")){
+    localStorage.removeItem(CHAVE_ARMAZEM);
+    atualizarAdmin();
+  }
+}
+
+/* ---------- nova resposta (sessões acompanhadas) ---------- */
+function novaResposta(){
+  /* recompõe o estado dos mini-jogos para a próxima pessoa */
+  cacaSala.reset();
+  cacaCozinha.reset();
+
+  rfSaldo = 500; rfSeguranca = 0; rfAplicados = 0;
+  document.getElementById("rf-saldo").textContent = "R$ 500";
+  document.getElementById("rf-seg").textContent = "0%";
+  document.getElementById("rf-barra").style.width = "0%";
+  document.getElementById("rf-msg").innerHTML = "Toque nas melhorias abaixo para aplicá-las na casa. 👇";
+  document.getElementById("rf-continuar").disabled = true;
+  document.getElementById("rf-tapete").style.opacity = "1";
+  document.getElementById("rf-escuro").setAttribute("opacity", "0.62");
+  ["rf-luz","rf-barra-apoio","rf-fita","rf-alexa"].forEach(id =>
+    document.getElementById(id).setAttribute("opacity", "0"));
+  RF_ITENS.forEach(item => {
+    const b = document.getElementById("rf-btn-" + item.id);
+    b.classList.remove("feito");
+    b.querySelector(".preco").textContent = item.preco === 0 ? "GRÁTIS" : "R$ " + item.preco;
+  });
+
+  document.getElementById("final-aviso").textContent = "";
+  document.getElementById("painel-admin").classList.remove("aberto");
+  mostrarTela("tela-inicio");
+}
+
+atualizarAdmin();
+</script>
+</body>
+</html>
