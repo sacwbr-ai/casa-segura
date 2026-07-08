@@ -65,6 +65,7 @@ real. Não as remova nem "simplifique" sem ele pedir:
 | **Fonte grande, linguagem simples, uma ação por tela** | Público 60+. Botões com min-height 56–64px. |
 | **Sem cadastro, sem dados pessoais, sem dinheiro** | Compromisso público do projeto. Só apelido. |
 | **Pontuação: 10 visível / 20 invisível / 5 solução / 5 V-F / 3 por ficha sobrando** | Máximo 84 por ambiente, 588 na rodada. Calibrado para gerar dispersão entre jogadores. |
+| **Celebrar sempre, punir nunca** (padrão Duolingo estudado em jul/2026) | Confete proporcional (14 acerto / 26 invisível / 22–80 na medalha), sons suaves opcionais (WebAudio, botão 🔊, `estado.som`), medalhas por ambiente (`medalhaDe`: 🥉<50 🥈50-69 🥇70+) e a voz do **Seu José** (helper `jose()`, frases em `JOSE_ACHOU`/`JOSE_SEGURO`). Decisão explícita: NADA de streak com perda, corações/punição ou notificação de culpa — público idoso, projeto de saúde. Backlog aprovado em conceito, não implementado: trilha vertical no mapa, "streak gentil" (nunca pune), resumo diário compartilhável. |
 
 ## 5. Arquitetura do `jogo.html`
 

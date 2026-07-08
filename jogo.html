@@ -26,7 +26,15 @@
   .suave{color:var(--texto-suave)}
   .centro{text-align:center}
 
-  .cartao{background:var(--cartao);border:1px solid var(--borda);border-radius:16px;box-shadow:var(--sombra);padding:22px 20px;margin-bottom:16px}
+  .cartao{background:var(--cartao);border:1px solid var(--borda);border-radius:16px;box-shadow:var(--sombra);padding:22px 20px;margin-bottom:16px;position:relative}
+
+  /* som, fala do Seu José e confete */
+  .btn-som{position:absolute;top:10px;right:12px;background:none;font-size:1.5rem;padding:8px;z-index:5}
+  .fala{display:flex;gap:10px;align-items:flex-start;margin-bottom:4px}
+  .fala .avatar{font-size:2.1rem;line-height:1.1}
+  .confete-area{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:999}
+  .confete{position:absolute;top:-24px;animation-name:confete-cair;animation-timing-function:linear;animation-fill-mode:forwards}
+  @keyframes confete-cair{to{transform:translateY(108vh) rotate(720deg)}}
 
   button{font-family:inherit;font-size:1.1rem;cursor:pointer;border:none;border-radius:14px;-webkit-tap-highlight-color:transparent}
   .btn-grande{display:block;width:100%;min-height:64px;padding:14px 20px;background:var(--verde);color:#fff;font-weight:600;box-shadow:var(--sombra);margin-top:8px}
@@ -100,7 +108,9 @@
         ⚠️ Perigo achado: <strong>+10</strong> · perigo escondido especial: <strong>+20</strong><br>
         🧠 Acertar a melhor solução: <strong>+5</strong> · pergunta bônus do dia: <strong>+5</strong><br>
         🎯 Fichas economizadas (ambiente completo): <strong>+3 cada</strong><br>
-        💡 Suas ideias avaliadas pela <strong>banca da IA</strong>: pontos extras no dia seguinte
+        💡 Suas ideias avaliadas pela <strong>banca da IA</strong>: pontos extras no dia seguinte<br>
+        👴 O <strong>Seu José</strong>, morador da casa, acompanha cada ronda — a casa é dele!<br>
+        🏅 Cada ambiente rende medalha: 🥉 até 49 pts · 🥈 50 a 69 · 🥇 70 ou mais
       </div>
       <label for="inp-apelido" style="text-align:left">Escolha seu apelido para o placar:</label>
       <input type="text" id="inp-apelido" maxlength="20" placeholder="Ex.: Vovó Ana, Carlos62...">
@@ -112,6 +122,7 @@
   <!-- ============ MAPA ============ -->
   <section class="tela" id="tela-mapa">
     <div class="cartao">
+      <button class="btn-som" onclick="alternarSom()" title="ligar/desligar sons">🔊</button>
       <h2 id="mapa-ola">🏠 A casa</h2>
       <div class="painel-topo">
         <div class="mostrador"><div class="rotulo">📅 Dia da rodada</div><div class="valor" id="mapa-dia">–</div></div>
@@ -145,6 +156,7 @@
   <!-- ============ JOGO (ronda) ============ -->
   <section class="tela" id="tela-jogo">
     <div class="cartao">
+      <button class="btn-som" onclick="alternarSom()" title="ligar/desligar sons">🔊</button>
       <span class="etiqueta laranja" id="jg-etiqueta">Dia 1</span>
       <h2 id="jg-titulo"></h2>
       <div class="painel-topo">
@@ -233,6 +245,89 @@ function toqueValido(){
   if(agora - _ultimoToque < 350) return false;
   _ultimoToque = agora;
   return true;
+}
+
+/* =====================================================================
+   CELEBRAÇÃO: sons suaves (opcionais), confete e medalhas
+   Princípio (Duolingo, sem os excessos): festejar o acerto na hora,
+   proporcional à conquista — e nunca punir.
+===================================================================== */
+let audioCtx = null;
+function somLigado(){ return estado && estado.som !== false; }
+function alternarSom(){
+  estado.som = !somLigado();
+  salvar();
+  atualizarBotoesSom();
+  if(somLigado()) tocar("acerto");
+}
+function atualizarBotoesSom(){
+  document.querySelectorAll(".btn-som").forEach(b => b.textContent = somLigado() ? "🔊" : "🔇");
+}
+function tocar(tipo){
+  if(!somLigado()) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const notas = {
+      acerto:    [[660,0,.12],[880,.1,.16]],
+      invisivel: [[660,0,.1],[880,.09,.1],[1108,.18,.22]],
+      seguro:    [[494,0,.14]],
+      erro:      [[233,0,.28]],
+      medalha:   [[523,0,.12],[659,.11,.12],[784,.22,.12],[1047,.33,.34]]
+    }[tipo] || [];
+    notas.forEach(([f, t, d]) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0, audioCtx.currentTime + t);
+      g.gain.linearRampToValueAtTime(.16, audioCtx.currentTime + t + .02);
+      g.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + t + d);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(audioCtx.currentTime + t); o.stop(audioCtx.currentTime + t + d + .05);
+    });
+  }catch(e){}
+}
+
+function confete(qtd, dourado){
+  const cores = dourado ? ["#f4c542","#ffe082","#e6a23c","#fff8dc"]
+                        : ["#e74c3c","#2e7d32","#1565c0","#f4c542","#7d5ba6","#e65100"];
+  let area = document.getElementById("confete-area");
+  if(!area){
+    area = document.createElement("div");
+    area.id = "confete-area";
+    area.className = "confete-area";
+    document.body.appendChild(area);
+  }
+  for(let i = 0; i < qtd; i++){
+    const p = document.createElement("div");
+    p.className = "confete";
+    const tam = 7 + Math.random() * 9;
+    p.style.cssText = "left:" + (Math.random() * 100) + "vw;width:" + tam + "px;height:" + tam +
+      "px;background:" + cores[Math.floor(Math.random() * cores.length)] +
+      ";animation-duration:" + (1.8 + Math.random() * 1.5) + "s;animation-delay:" + (Math.random() * .5) + "s" +
+      (Math.random() < .4 ? ";border-radius:50%" : "");
+    area.appendChild(p);
+    setTimeout(() => p.remove(), 4200);
+  }
+}
+
+function medalhaDe(pts){ return pts >= 70 ? "🥇" : pts >= 50 ? "🥈" : "🥉"; }
+function nomeMedalha(m){ return m === "🥇" ? "OURO" : m === "🥈" ? "PRATA" : "bronze"; }
+
+/* ---------- a voz do Seu José ---------- */
+const JOSE_ACHOU = [
+  "Boa! Esse aí já quase me derrubou uma vez...",
+  "Olho de águia! 👏",
+  "Muito bem! Um perigo a menos na minha casa.",
+  "Arre! Eu passava por ele todo dia sem ver.",
+  "Você enxerga o que ninguém vê!"
+];
+const JOSE_SEGURO = [
+  "Esse está do nosso lado!",
+  "Pode confiar: esse é dos bons.",
+  "Bem lembrado inspecionar — mas esse ajuda a casa."
+];
+function fraseDe(lista){ return lista[Math.floor(Math.random() * lista.length)]; }
+function jose(html){
+  return "<div class='fala'><span class='avatar'>👴</span><div><strong>Seu José:</strong> " + html + "</div></div>";
 }
 
 /* =====================================================================
@@ -902,6 +997,7 @@ const CHAVE = "casaSegura_jogo_v2";
 let estado = null;
 try{ estado = JSON.parse(localStorage.getItem(CHAVE)); }catch(e){}
 if(!estado) estado = { apelido:"", comodos:{}, ideias:[] };
+if(typeof estado.som === "undefined") estado.som = true;
 function salvar(){ try{ localStorage.setItem(CHAVE, JSON.stringify(estado)); }catch(e){} }
 
 function resultadoDe(id){ return estado.comodos[id] || null; }
@@ -981,7 +1077,7 @@ function montarMapa(){
     b.className = "card-comodo" + (aberto ? (res ? " completo" : "") : " bloqueado");
     let estadoTxt;
     if(!aberto) estadoTxt = "🔒 abre no dia " + c.dia;
-    else if(res) estadoTxt = "✅ Ronda feita: " + res.pontos + " pts (" + res.achados.length + "/5 perigos) — toque para rever";
+    else if(res) estadoTxt = medalhaDe(res.pontos) + " " + res.pontos + " pts (" + res.achados.length + "/5 perigos) — toque para rever";
     else estadoTxt = "🔍 Ronda disponível — uma única chance!";
     b.innerHTML =
       "<span class='icone'>" + (aberto ? c.icone : "🔒") + "</span>" +
@@ -1126,24 +1222,29 @@ function tocarObjeto(g, tipo, oid){
     ronda.pontos += pts;
     marcar(svg, "r", oid, "#2e7d32");
     atualizarTopo();
+    confete(r.invisivel ? 26 : 14);
+    tocar(r.invisivel ? "invisivel" : "acerto");
+    const abertura = jose((r.invisivel ? "🕵️ Você achou o risco escondido da casa! " : fraseDe(JOSE_ACHOU) + " ") +
+      "<strong>+" + pts + " pontos!</strong>");
     if(r.pergunta){
-      abrirPergunta(r, pts);
+      abrirPergunta(r, abertura);
     }else{
-      abrirPainel("<strong>+" + pts + " pontos!" + (r.invisivel ? " 🕵️ Você achou o risco escondido!" : "") +
-        "</strong><br>" + r.licao, null, verificarFim);
+      abrirPainel(abertura + "<div style='margin-top:8px'>" + r.licao + "</div>", null, verificarFim);
     }
   }else{
     const s = ronda.c.seguros[oid];
     atualizarTopo();
-    abrirPainel("<strong>Este está seguro — a ficha foi gasta, mas a lição fica:</strong><br>" + s, null, verificarFim);
+    tocar("seguro");
+    abrirPainel(jose(fraseDe(JOSE_SEGURO) + " (a ficha foi gasta, mas a lição fica)") +
+      "<div style='margin-top:8px'>" + s + "</div>", null, verificarFim);
   }
 }
 
-function abrirPergunta(r, ptsBase){
+function abrirPergunta(r, abertura){
   ronda.pend = "pergunta";
   const painel = document.getElementById("jg-painel");
-  painel.innerHTML = "<strong>+" + ptsBase + " pontos!</strong> " + r.licao +
-    "<br><br><strong>🧠 Valendo +5: " + r.pergunta.p + "</strong>";
+  painel.innerHTML = abertura + "<div style='margin-top:8px'>" + r.licao +
+    "</div><br><strong>🧠 Valendo +5: " + r.pergunta.p + "</strong>";
   r.pergunta.ops.forEach((op, i) => {
     const b = document.createElement("button");
     b.className = "btn-opcao";
@@ -1153,7 +1254,8 @@ function abrirPergunta(r, ptsBase){
       painel.querySelectorAll(".btn-opcao").forEach(x => x.disabled = true);
       const certa = i === r.pergunta.certa;
       b.classList.add(certa ? "certa" : "errada");
-      if(certa){ ronda.acertosSolucao++; ronda.pontos += PONTOS_SOLUCAO; }
+      if(certa){ ronda.acertosSolucao++; ronda.pontos += PONTOS_SOLUCAO; confete(8); tocar("acerto"); }
+      else{ tocar("erro"); }
       const fb = document.createElement("div");
       fb.style.marginTop = "10px";
       fb.innerHTML = (certa ? "✅ <strong>Certo! +5 pontos.</strong> " : "❌ <strong>A melhor era: “" +
@@ -1202,11 +1304,12 @@ function encerrarRonda(motivo, silencioso){
 function perguntaBonus(motivo, bonusFichas){
   const bn = ronda.c.bonus;
   const painel = document.getElementById("jg-painel");
-  const cab = motivo === "completo" ? "🎉 <strong>Ambiente completo!</strong> +" + bonusFichas + " de bônus pelas " + ronda.fichas + " fichas economizadas."
-    : motivo === "tempo" ? "⏱️ <strong>O tempo da ronda acabou.</strong>"
-    : motivo === "fichas" ? "🎟️ <strong>As fichas acabaram.</strong>"
-    : "🚪 <strong>Ronda encerrada.</strong>";
-  painel.innerHTML = cab + "<br><br><strong>⭐ Pergunta bônus do dia (+5): " + bn.p + "</strong>";
+  if(motivo === "completo") confete(30);
+  const cab = motivo === "completo" ? jose("🎉 <strong>Você encontrou tudo!</strong> Minha casa agradece. +" + bonusFichas + " de bônus pelas " + ronda.fichas + " fichas economizadas.")
+    : motivo === "tempo" ? jose("⏱️ <strong>O tempo voou!</strong> Vamos ver o que você garantiu.")
+    : motivo === "fichas" ? jose("🎟️ <strong>As fichas acabaram.</strong> Inspecionar cansa, eu sei bem!")
+    : jose("🚪 <strong>Ronda encerrada.</strong> O que você achou já está garantido.");
+  painel.innerHTML = cab + "<br><strong>⭐ Pergunta bônus do dia (+5): " + bn.p + "</strong>";
   [["✔️ Verdadeiro", true], ["✖️ Falso", false]].forEach(([rot, val]) => {
     const b = document.createElement("button");
     b.className = "btn-opcao";
@@ -1216,7 +1319,8 @@ function perguntaBonus(motivo, bonusFichas){
       painel.querySelectorAll(".btn-opcao").forEach(x => x.disabled = true);
       const certa = val === bn.certaVF;
       b.classList.add(certa ? "certa" : "errada");
-      if(certa){ ronda.bonusVF = PONTOS_BONUS_VF; ronda.pontos += PONTOS_BONUS_VF; }
+      if(certa){ ronda.bonusVF = PONTOS_BONUS_VF; ronda.pontos += PONTOS_BONUS_VF; confete(10); tocar("acerto"); }
+      else{ tocar("erro"); }
       const fb = document.createElement("div");
       fb.style.marginTop = "10px";
       fb.innerHTML = (certa ? "✅ <strong>+5 pontos!</strong> " : "❌ ") + bn.explica;
@@ -1249,8 +1353,13 @@ function finalizarResultado(motivo, bonusFichas, mostrar){
   const perdidos = Object.keys(c.riscos).filter(id => !ronda.achados.includes(id));
   const svg = document.getElementById("jg-palco").querySelector("svg");
   perdidos.forEach(id => marcar(svg, "r", id, "#e67e22")); // revela o que passou batido
+  const medal = medalhaDe(ronda.pontos);
+  confete(medal === "🥇" ? 80 : medal === "🥈" ? 45 : 22, medal === "🥇");
+  tocar("medalha");
   const painel = document.getElementById("jg-painel");
   painel.innerHTML =
+    "<div class='centro' style='font-size:3.2rem;line-height:1.1'>" + medal + "</div>" +
+    "<div class='centro' style='font-size:1.2rem;margin-bottom:8px'><strong>Medalha de " + nomeMedalha(medal) + "!</strong></div>" +
     "<strong>🏁 Resultado — " + c.icone + " " + c.nome + "</strong>" +
     "<div class='resumo-final'>" +
     "<div>⚠️ Perigos visíveis: " + nVis + " × 10 = <strong>" + nVis * PONTOS_RISCO + "</strong></div>" +
@@ -1273,7 +1382,7 @@ function abrirRevisao(c){
   ronda = null;
   pararTimer();
   const res = resultadoDe(c.id);
-  document.getElementById("jg-etiqueta").textContent = "Dia " + c.dia + " · revisão (ronda já feita)";
+  document.getElementById("jg-etiqueta").textContent = "Dia " + c.dia + " · revisão " + medalhaDe(res.pontos);
   document.getElementById("jg-titulo").textContent = c.icone + " " + c.nome;
   document.getElementById("jg-fichas").textContent = "—";
   document.getElementById("jg-tempo").textContent = "—";
@@ -1361,21 +1470,33 @@ function codigoVerificador(){
   return h.toString(36).toUpperCase().padStart(4, "0");
 }
 
+function contarMedalhas(){
+  const t = { "🥇": 0, "🥈": 0, "🥉": 0 };
+  COMODOS.forEach(c => { const r = resultadoDe(c.id); if(r) t[medalhaDe(r.pontos)]++; });
+  return t;
+}
+
 function abrirPlacar(){
   document.getElementById("pl-pontos").textContent = pontosTotais();
   document.getElementById("pl-completos").textContent = rondasFeitas() + "/7";
-  document.getElementById("pl-detalhe").innerHTML = COMODOS.map(c => {
-    const r = resultadoDe(c.id);
-    return "<div>" + c.icone + " " + c.nome + ": " +
-      (r ? r.pontos + " pts (" + r.achados.length + "/5)" : "ronda pendente") + "</div>";
-  }).join("");
+  const m = contarMedalhas();
+  document.getElementById("pl-detalhe").innerHTML =
+    "<div class='centro' style='font-size:1.4rem;margin-bottom:10px'>🥇 " + m["🥇"] +
+    "  ·  🥈 " + m["🥈"] + "  ·  🥉 " + m["🥉"] + "</div>" +
+    COMODOS.map(c => {
+      const r = resultadoDe(c.id);
+      return "<div>" + c.icone + " " + c.nome + ": " +
+        (r ? medalhaDe(r.pontos) + " " + r.pontos + " pts (" + r.achados.length + "/5)" : "ronda pendente") + "</div>";
+    }).join("");
   document.getElementById("pl-aviso").textContent = "";
   mostrarTela("tela-placar");
 }
 
 function textoPontuacao(){
+  const m = contarMedalhas();
   return "CASA SEGURA — Caça aos Riscos\n" +
     "Apelido: " + estado.apelido + "\n" +
+    "Medalhas: 🥇x" + m["🥇"] + " 🥈x" + m["🥈"] + " 🥉x" + m["🥉"] + "\n" +
     "Pontos da busca: " + pontosTotais() + "\n" +
     "Perigos achados: " + totalAchados() + " de " + TOTAL_RISCOS + "\n" +
     "Rondas feitas: " + rondasFeitas() + " de 7\n" +
@@ -1418,6 +1539,7 @@ if(estado.apelido && rondasFeitas() > 0){
   mostrarTela("tela-mapa");
 }
 listarIdeias();
+atualizarBotoesSom();
 </script>
 </body>
 </html>

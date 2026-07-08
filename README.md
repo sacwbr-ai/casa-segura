@@ -25,6 +25,7 @@ rodada abre um ambiente novo (`DATA_INICIO` na configuração do arquivo).
 | Pergunta bônus V/F do dia | +5 |
 | Fichas economizadas (ambiente completo) | +3 cada |
 | Máximo por ambiente | 84 pontos |
+| Medalha do ambiente | 🥉 até 49 · 🥈 50–69 · 🥇 70+ |
 
 Ao final da ronda, os riscos não achados aparecem em **laranja** e podem ser
 tocados para aprender (sem pontos). Ambientes já jogados ficam em modo revisão.
